@@ -1,0 +1,41 @@
+[package]
+name = "pallet-axial-router"
+version = "0.1.0"
+description = "Minimalist multi-token routing system optimized for TMC ecosystems"
+authors = ["Parachain Team"]
+homepage = "https://substrate.io"
+edition = "2021"
+license = "MIT-0"
+publish = false
+repository = "https://github.com/paritytech/polkadot-sdk/"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { workspace = true }
+scale-info = { workspace = true }
+primitives = { workspace = true, default-features = false }
+pallet-token-minting-curve = { path = "../token-minting-curve", default-features = false }
+polkadot-sdk = { workspace = true, features = [
+  "frame-support",
+  "frame-system",
+  "pallet-asset-conversion",
+  "pallet-balances",
+  "pallet-assets",
+  "sp-runtime",
+  "sp-io",
+] }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "primitives/std",
+    "polkadot-sdk/std",
+    "scale-info/std",
+]
+runtime-benchmarks = [
+  "polkadot-sdk/runtime-benchmarks",
+]
+try-runtime = ["polkadot-sdk/try-runtime"]

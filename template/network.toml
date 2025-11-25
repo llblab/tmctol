@@ -1,0 +1,31 @@
+[relaychain]
+chain = "paseo-local"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+
+[[parachains]]
+id = 2000
+default_command = "polkadot-omni-node"
+chain_spec_command_is_local = true
+chain_spec_path = "./target/release/tmctol-spec.json"
+chain_spec_command_output_path = "./target/release/tmctol-spec.json"
+chain_spec_command = """
+polkadot-omni-node chain-spec-builder \
+  --chain-spec-path "./target/release/tmctol-spec.json" \
+  create \
+  --runtime "./target/release/wbuild/tmctol-runtime/tmctol_runtime.wasm" \
+  --para-id 2000 \
+  --chain-id tmctol-dev \
+  -t development \
+  --relay-chain paseo-local \
+  named-preset development
+"""
+
+[[parachains.collators]]
+name = "collator-01"

@@ -1,1 +1,24 @@
-/temp
+# Build artifacts
+target/
+template/target/
+
+# Binaries
+template/polkadot
+template/polkadot-execute-worker
+template/polkadot-omni-node
+template/polkadot-parachain
+template/polkadot-prepare-worker
+template/parachain-template-node
+
+# Chain specs (keep template, ignore generated)
+template/*.json
+
+# Logs
+*.log
+logs/
+
+# Backup files
+backup-*.tar.gz
+
+# Temporary files
+delme/

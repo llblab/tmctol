@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Parachain Template Framework`: Introduced `/template`, a complete production-ready Polkadot SDK parachain implementation of the TMCTOL standard (Omni Node, Frame V2).
+  - `Pallets`: `axial-router`, `burning-manager`, `token-minting-curve`, `treasury-owned-liquidity`, `zap-manager`, and `asset-registry`.
+  - `Runtime`: Configured with "Runtime-as-Config" pattern, `LazyBlock` APIs, and `SingleBlockMigrations`.
+  - `Infrastructure`: Docker-ready node configuration, Zombienet tests, and benchmarking tooling.
+
+- `Polkadot SDK 2512 Integration`: Full synchronization with Polkadot SDK v1.21.0.
+  - Migrated workspace dependencies and `rust-toolchain.toml` (Rust 1.88).
+  - Implemented `XCM v5` configuration and `cumulus-pallet-xcmp-queue` migration.
+  - Updated `pallet-assets` with `ReserveData` support.
+
+- `Foreign Asset Reception`: Complete XCM inbound infrastructure.
+  - `ForeignAssetsTransactor`: Handles incoming assets via `pallet-assets`.
+  - `Hybrid Registry`: Deterministic `LocationToAssetId` mapping with persistent storage for Foreign (0xF...) assets.
+  - `Trust Filters`: `ReserveAssetsFrom` enabled for Relay Chain and Sibling Parachains.
+
+- `Comprehensive Governance`: Implemented `AdminOrigin` controls across all economic pallets for parameter management (fees, thresholds, pausing).
+
+- `Stateful Benchmarking`: Added `BenchmarkHelper` implementations for realistic weight generation in custom pallets.
+
+### Changed
+
+- `Economic Precision`: Standardized all pallets to use `PRECISION` (10^12) and ecosystem constants from `primitives::ecosystem::params`.
+- `Testing Architecture`: achieved 100% test coverage (113 runtime tests) including economic invariant checks and load testing.
+- `Governance Logic`: Moved from hardcoded constants to on-chain storage parameters updateable via governance.
+
+### Fixed
+
+- `Consensus Configuration`: Resolved block production issues by adopting `FixedVelocityConsensusHook` and correct Async Backing parameters.
+- `Runtime API Completeness`: Fixed silent failures by implementing missing APIs like `RelayParentOffsetApi` and `AuraUnincludedSegmentApi`.
+
 ---
 
 ## [1.0.1] - 2025-12-12

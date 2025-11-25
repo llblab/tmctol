@@ -1,0 +1,42 @@
+[workspace.package]
+license = "MIT-0"
+authors = ["Parity Technologies <admin@parity.io>"]
+homepage = "https://paritytech.github.io/polkadot-sdk/"
+repository = "https://github.com/paritytech/polkadot-sdk-parachain-template.git"
+edition = "2021"
+
+[workspace]
+default-members = ["pallets/axial-router", "runtime"]
+members = ["pallets/asset-registry", "pallets/axial-router", "pallets/burning-manager", "pallets/token-minting-curve", "pallets/treasury-owned-liquidity", "pallets/zap-manager", "primitives", "runtime"]
+resolver = "2"
+
+[workspace.dependencies]
+tmctol-runtime = { path = "./runtime", default-features = false }
+primitives = { path = "./primitives", default-features = false }
+pallet-asset-registry = { path = "./pallets/asset-registry", default-features = false }
+pallet-axial-router = { path = "./pallets/axial-router", default-features = false }
+pallet-burning-manager = { path = "./pallets/burning-manager", default-features = false }
+pallet-token-minting-curve = { path = "./pallets/token-minting-curve", default-features = false }
+pallet-treasury-owned-liquidity = { path = "./pallets/treasury-owned-liquidity", default-features = false }
+pallet-zap-manager = { path = "./pallets/zap-manager", default-features = false }
+docify = { version = "^0.4" }
+log = { version = "^0.4", default-features = false }
+polkadot-sdk = { version = "2512.0.0", default-features = false }
+serde = { version = "^1.0", default-features = false }
+codec = { version = "^3.7", default-features = false, package = "parity-scale-codec" }
+cumulus-pallet-parachain-system = { version = "0.25.0", default-features = false }
+hex-literal = { version = "^1.1", default-features = false }
+scale-info = { version = "^2.11", default-features = false }
+serde_json = { version = "^1.0", default-features = false }
+smallvec = { version = "^1.15", default-features = false }
+sp-arithmetic = { version = "28.0.0", default-features = false }
+substrate-wasm-builder = { version = "31.0.0", default-features = false }
+
+[profile.release]
+opt-level = 3
+panic = "unwind"
+
+[profile.production]
+codegen-units = 1
+inherits = "release"
+lto = true

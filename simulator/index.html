@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TMCTOL Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              native: "#06b6d4", // Cyan-500
+              dot: "#e6007a", // Polkadot Pink
+              tol: "#10b981", // Emerald-500
+              darkbg: "#0f172a", // Slate-900
+              panel: "#1e293b", // Slate-800
+            },
+            fontFamily: {
+              mono: [
+                "ui-monospace",
+                "SFMono-Regular",
+                "Menlo",
+                "Monaco",
+                "Consolas",
+                "Liberation Mono",
+                "Courier New",
+                "monospace",
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      .log-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .log-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .log-scroll::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 2px;
+      }
+
+      .glass-panel {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      /* Hide Number Input Spinners */
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-darkbg text-slate-200 h-screen w-screen font-sans antialiased selection:bg-dot selection:text-white overflow-hidden flex flex-col"
+  >
+    <!-- Main Layout -->
+    <main
+      class="flex-1 p-2 lg:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 h-full overflow-y-auto lg:overflow-hidden"
+    >
+      <!-- LEFT COLUMN: CONTROLS -->
+      <div class="lg:col-span-4 flex flex-col gap-4 h-full min-h-0">
+        <!-- Header -->
+        <div
+          class="flex items-center justify-between shrink-0 bg-slate-900/50 p-3 rounded-2xl border border-white/5"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-xl bg-gradient-to-br from-native to-cyan-600 flex items-center justify-center font-bold text-white shadow-lg shadow-native/20 text-xl"
+            >
+              T
+            </div>
+            <div>
+              <h1 class="font-bold text-lg leading-none text-white">
+                TMCTOL
+                <span class="text-slate-500 text-xs font-normal">Sim v1.3</span>
+              </h1>
+              <div
+                class="flex items-center gap-2 text-[10px] text-emerald-400 mt-1"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                ></div>
+                Router Online
+              </div>
+            </div>
+          </div>
+          <button
+            onclick="app.faucetForeign()"
+            class="text-[10px] font-bold bg-dot/10 hover:bg-dot/20 border border-dot/20 text-dot px-3 py-2 rounded-lg transition-all uppercase tracking-wide"
+          >
+            + Faucet DOT
+          </button>
+        </div>
+
+        <!-- Wallet -->
+        <div class="glass-panel rounded-2xl p-4 shrink-0">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-800/40 rounded-xl p-3 border border-white/5">
+              <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">
+                Native Balance
+              </div>
+              <div
+                class="font-mono text-lg text-native tracking-tight truncate"
+                id="wallet-native"
+              >
+                0.00
+              </div>
+            </div>
+            <div class="bg-slate-800/40 rounded-xl p-3 border border-white/5">
+              <div class="text-[10px] text-slate-500 font-bold uppercase mb-1">
+                DOT Balance
+              </div>
+              <div
+                class="font-mono text-lg text-dot tracking-tight truncate"
+                id="wallet-foreign"
+              >
+                0.00
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRADE CONSOLE -->
+        <div
+          class="glass-panel rounded-2xl flex flex-col flex-1 min-h-0 border-t-4 border-t-native overflow-y-auto"
+        >
+          <div class="p-5 space-y-6">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              Trade Console
+              <span
+                class="text-[10px] bg-white/10 text-slate-300 px-1.5 py-0.5 rounded font-normal"
+                >Auto-Route</span
+              >
+            </h2>
+
+            <!-- Inputs Container -->
+            <div class="flex flex-col gap-1">
+              <!-- PAY INPUT -->
+              <div class="relative group z-0">
+                <label
+                  class="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5 uppercase px-1"
+                >
+                  <span id="swap-label-pay">Pay</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    id="swap-input"
+                    placeholder="0.00"
+                    class="w-full bg-slate-900/80 border border-white/10 rounded-xl py-4 px-4 text-white placeholder-slate-600 focus:outline-none focus:border-native focus:ring-1 focus:ring-native font-mono text-xl transition-all group-hover:border-white/20"
+                  />
+                  <span
+                    class="absolute right-4 top-5 text-xs font-bold text-slate-500"
+                    id="swap-ticker-in"
+                    >DOT</span
+                  >
+                </div>
+              </div>
+
+              <!-- FLIP BUTTON (Centered) -->
+              <div class="flex justify-center -my-3 relative z-10">
+                <button
+                  onclick="app.toggleSwapDirection()"
+                  class="group bg-slate-800 border border-white/10 hover:border-native hover:bg-slate-700 rounded-full p-2 shadow-xl transition-all hover:scale-110 active:scale-95 ring-4 ring-darkbg/50"
+                >
+                  <svg
+                    class="w-4 h-4 text-slate-400 group-hover:text-native transition-colors transform group-hover:rotate-180 duration-300"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- RECEIVE INPUT -->
+              <div class="relative z-0">
+                <label
+                  class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase px-1 mt-2"
+                  >Receive (Est)</label
+                >
+                <div
+                  class="bg-slate-900/40 rounded-xl py-4 px-4 flex justify-between items-center border border-white/5"
+                >
+                  <span
+                    class="font-mono text-xl text-white font-medium"
+                    id="swap-estimate"
+                    >0.00</span
+                  >
+                  <span
+                    class="text-xs font-bold text-slate-500"
+                    id="swap-ticker-out"
+                    >NATIVE</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Routing Info -->
+            <div
+              class="bg-slate-800/50 rounded-xl p-3 border border-white/5 space-y-2"
+            >
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500">Router Path</span>
+                <span class="font-bold text-white flex items-center gap-2">
+                  <span
+                    id="route-badge"
+                    class="bg-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider"
+                    >---</span
+                  >
+                </span>
+              </div>
+
+              <div
+                id="route-details-xyk"
+                class="flex justify-between items-center text-xs"
+              >
+                <span class="text-slate-500">Price Impact</span>
+                <span class="font-mono text-slate-300" id="swap-impact"
+                  >0.00%</span
+                >
+              </div>
+
+              <div
+                id="route-details-tmc"
+                class="hidden space-y-2 pt-2 mt-2 border-t border-white/5"
+              >
+                <div class="flex justify-between items-center text-[10px]">
+                  <span class="text-native">User Received (33%)</span>
+                  <span class="font-mono text-white" id="tmc-user-share"
+                    >0.00</span
+                  >
+                </div>
+                <div class="flex justify-between items-center text-[10px]">
+                  <span class="text-tol">TOL Captured (66%)</span>
+                  <span class="font-mono text-tol" id="tmc-tol-share"
+                    >0.00</span
+                  >
+                </div>
+              </div>
+
+              <div
+                class="flex justify-between items-center text-xs pt-1 border-t border-white/5 border-dashed"
+              >
+                <span class="text-slate-500">Burn Fee</span>
+                <span class="text-orange-400 font-mono text-[10px]">0.5%</span>
+              </div>
+            </div>
+
+            <button
+              onclick="app.executeSwap()"
+              class="w-full py-4 bg-gradient-to-r from-native to-cyan-600 hover:to-cyan-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-native/20 active:scale-[0.98] uppercase tracking-wide text-sm"
+            >
+              Confirm Transaction
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: DATA & VISUALS -->
+      <div class="lg:col-span-8 flex flex-col gap-4 h-full min-h-0">
+        <!-- Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+          <div class="glass-panel rounded-xl p-3 relative overflow-hidden">
+            <p class="text-slate-500 text-[10px] font-bold uppercase">
+              Spot Price (DOT)
+            </p>
+            <h3
+              class="text-xl font-bold text-white mt-0.5 font-mono"
+              id="stat-spot-price"
+            >
+              ---
+            </h3>
+          </div>
+          <!-- Modified: Shows Effective User Ceiling -->
+          <div
+            class="glass-panel rounded-xl p-3 relative overflow-hidden border-l-2 border-l-native"
+          >
+            <p class="text-slate-500 text-[10px] font-bold uppercase">
+              User Ceiling (Eff)
+            </p>
+            <h3
+              class="text-xl font-bold text-native mt-0.5 font-mono"
+              id="stat-ceiling-price"
+            >
+              ---
+            </h3>
+            <div
+              class="absolute right-2 top-2 text-[9px] text-slate-600 font-mono"
+            >
+              REAL COST
+            </div>
+          </div>
+          <div class="glass-panel rounded-xl p-3 relative overflow-hidden">
+            <p class="text-slate-500 text-[10px] font-bold uppercase">
+              Est. Floor (25%)
+            </p>
+            <h3
+              class="text-xl font-bold text-tol mt-0.5 font-mono"
+              id="stat-floor-price"
+            >
+              ---
+            </h3>
+          </div>
+          <div class="glass-panel rounded-xl p-3 relative overflow-hidden">
+            <p class="text-slate-500 text-[10px] font-bold uppercase">
+              Total Supply
+            </p>
+            <h3
+              class="text-lg font-bold text-white mt-0.5 font-mono"
+              id="stat-supply"
+            >
+              ---
+            </h3>
+          </div>
+        </div>
+
+        <!-- Charts Area (Flex Grow 2) -->
+        <div class="flex-[2] min-h-0 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Price Chart -->
+          <div class="glass-panel rounded-2xl p-4 flex flex-col min-h-0">
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase mb-2 shrink-0"
+            >
+              Price Dynamics (DOT/NATIVE)
+            </h3>
+            <div class="flex-1 min-h-0 relative">
+              <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Supply Chart -->
+          <div class="glass-panel rounded-2xl p-4 flex flex-col min-h-0">
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase mb-2 shrink-0"
+            >
+              Supply Growth
+            </h3>
+            <div class="flex-1 min-h-0 relative">
+              <div class="chart-container">
+                <canvas id="supplyChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Panel (Flex Grow 1) -->
+        <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- TOL Bar -->
+          <div
+            class="glass-panel rounded-2xl p-4 flex flex-col justify-center min-h-0"
+          >
+            <div class="flex justify-between items-end mb-3">
+              <h2 class="text-xs font-bold text-white flex items-center gap-2">
+                <span
+                  class="w-1.5 h-1.5 rounded-full bg-tol animate-pulse"
+                ></span>
+                Treasury Liquidity
+              </h2>
+              <p class="font-mono text-tol font-bold text-sm" id="tol-total-lp">
+                0.00 LP
+              </p>
+            </div>
+
+            <div
+              class="flex h-8 w-full rounded bg-slate-800 overflow-hidden font-mono text-[9px] text-darkbg font-bold leading-8 text-center opacity-90"
+            >
+              <div
+                style="width: 50%"
+                class="bg-tol hover:bg-emerald-400 transition-colors cursor-help"
+                title="Bucket A (Floor)"
+              >
+                A
+              </div>
+              <div
+                style="width: 16.6%"
+                class="bg-blue-500 hover:bg-blue-400 transition-colors cursor-help"
+                title="Bucket B (Dev)"
+              >
+                B
+              </div>
+              <div
+                style="width: 16.6%"
+                class="bg-purple-500 hover:bg-purple-400 transition-colors cursor-help"
+                title="Bucket C (Ops)"
+              >
+                C
+              </div>
+              <div
+                style="width: 16.6%"
+                class="bg-orange-500 hover:bg-orange-400 transition-colors cursor-help"
+                title="Bucket D (Res)"
+              >
+                D
+              </div>
+            </div>
+
+            <div
+              class="flex justify-between mt-2 text-[9px] font-mono text-slate-500 px-1"
+            >
+              <span id="bucket-a-val">A: 0</span>
+              <span id="bucket-b-val">B: 0</span>
+              <span id="bucket-c-val">C: 0</span>
+              <span id="bucket-d-val">D: 0</span>
+            </div>
+          </div>
+
+          <!-- Event Log -->
+          <div class="glass-panel rounded-2xl p-4 flex flex-col min-h-0">
+            <div class="flex items-center justify-between mb-2 shrink-0">
+              <h3 class="text-[9px] font-bold text-slate-500 uppercase">
+                Protocol Events
+              </h3>
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-native opacity-50"
+              ></span>
+            </div>
+            <div
+              id="activity-log"
+              class="flex-1 overflow-y-auto log-scroll space-y-1 font-mono text-[10px] pr-1"
+            >
+              <div class="text-slate-600">> System initialized...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { create_system, User, PRECISION, PPM, BigMath } from "./model.js";
+
+      const DECIMALS = 12n;
+      const MAX_HISTORY = 60;
+
+      function toBigInt(valStr) {
+        if (!valStr) return 0n;
+        try {
+          const [int, frac = ""] = valStr.split(".");
+          const paddedFrac = frac
+            .padEnd(Number(DECIMALS), "0")
+            .slice(0, Number(DECIMALS));
+          return BigInt(int + paddedFrac);
+        } catch (e) {
+          return 0n;
+        }
+      }
+
+      function fmt(val, dec = 4) {
+        const div = 10n ** DECIMALS;
+        const integer = val / div;
+        const remainder = val % div;
+        let fracStr = remainder.toString().padStart(Number(DECIMALS), "0");
+        fracStr = fracStr.slice(0, dec);
+        const intStr = integer.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return `${intStr}.${fracStr}`;
+      }
+
+      function bnToFloat(bn) {
+        return Number(bn) / Number(PRECISION);
+      }
+
+      Chart.defaults.color = "#64748b";
+      Chart.defaults.borderColor = "#1e293b";
+      Chart.defaults.font.family = "ui-monospace, monospace";
+      Chart.defaults.maintainAspectRatio = false;
+
+      class App {
+        constructor() {
+          this.system = create_system();
+          this.user = new User(0n, 10000n * PRECISION);
+          this.user.set_router(this.system.router);
+          this.swapDirection = "native_to_foreign";
+
+          // Calculate Distribution Share for Effective Price
+          this.userShare = Number(this.system.tmc.user_ppm) / Number(PPM);
+
+          this.tick = 0;
+          this.history = {
+            labels: [],
+            spot: [],
+            ceilingRaw: [],
+            ceilingEff: [],
+            floor: [],
+            supply: [],
+            burned: [],
+          };
+
+          this.initCharts();
+          this.bindEvents();
+          this.log("Router Online. Connected to DOT Relay.", "info");
+          this.recordState();
+          this.updateUI();
+          this.toggleSwapDirection();
+        }
+
+        initCharts() {
+          const ctxPrice = document
+            .getElementById("priceChart")
+            .getContext("2d");
+          const ctxSupply = document
+            .getElementById("supplyChart")
+            .getContext("2d");
+
+          this.priceChart = new Chart(ctxPrice, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                // Effective User Ceiling (The real cost)
+                {
+                  label: "User Ceiling",
+                  data: [],
+                  borderColor: "#06b6d4",
+                  borderDash: [5, 5],
+                  backgroundColor: "rgba(6, 182, 212, 0.05)",
+                  tension: 0.1,
+                  fill: true,
+                  pointRadius: 0,
+                },
+                // Raw TMC Price (Under the hood)
+                {
+                  label: "Raw TMC",
+                  data: [],
+                  borderColor: "#0e7490",
+                  borderDash: [2, 2],
+                  tension: 0.1,
+                  pointRadius: 0,
+                  borderWidth: 1,
+                },
+                // Spot Price (Solid line - Main indicator)
+                {
+                  label: "Spot Price",
+                  data: [],
+                  borderColor: "#ffffff",
+                  tension: 0.1,
+                  pointRadius: 0,
+                  borderWidth: 2,
+                },
+                // Floor
+                {
+                  label: "Floor (Est)",
+                  data: [],
+                  borderColor: "#10b981",
+                  borderDash: [5, 5],
+                  backgroundColor: "rgba(16, 185, 129, 0.05)",
+                  tension: 0.1,
+                  fill: true,
+                  pointRadius: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { intersect: false, mode: "index" },
+              plugins: {
+                legend: {
+                  display: true,
+                  labels: { boxWidth: 6, font: { size: 9 } },
+                },
+              },
+              scales: {
+                y: { grid: { color: "#1e293b" }, ticks: { font: { size: 9 } } },
+                x: { display: false },
+              },
+            },
+          });
+
+          this.supplyChart = new Chart(ctxSupply, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  label: "Supply",
+                  data: [],
+                  borderColor: "#f59e0b",
+                  tension: 0.4,
+                  pointRadius: 0,
+                  yAxisID: "y",
+                },
+                {
+                  label: "Burned",
+                  data: [],
+                  borderColor: "#ef4444",
+                  borderDash: [2, 2],
+                  tension: 0.4,
+                  pointRadius: 0,
+                  yAxisID: "y1",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { intersect: false, mode: "index" },
+              plugins: {
+                legend: {
+                  display: true,
+                  labels: { boxWidth: 6, font: { size: 9 } },
+                },
+              },
+              scales: {
+                x: { display: false },
+                y: {
+                  display: true,
+                  grid: { color: "#1e293b" },
+                  ticks: { font: { size: 9 } },
+                },
+                y1: {
+                  display: true,
+                  position: "right",
+                  grid: { drawOnChartArea: false },
+                  ticks: { font: { size: 9 } },
+                },
+              },
+            },
+          });
+        }
+
+        bindEvents() {
+          document
+            .getElementById("swap-input")
+            .addEventListener("input", () => this.calcSwap());
+        }
+
+        recordState() {
+          this.tick++;
+          const spot = this.system.xyk.has_liquidity()
+            ? bnToFloat(this.system.xyk.get_price())
+            : 0;
+          const ceilingRaw = bnToFloat(this.system.tmc.get_price());
+          const ceilingEff = ceilingRaw / this.userShare; // Calculate Effective Price
+          const floor = spot > 0 ? spot * 0.25 : 0;
+
+          this.history.labels.push(this.tick);
+          this.history.spot.push(spot);
+          this.history.ceilingRaw.push(ceilingRaw);
+          this.history.ceilingEff.push(ceilingEff);
+          this.history.floor.push(floor);
+          this.history.supply.push(bnToFloat(this.system.tmc.supply));
+          this.history.burned.push(
+            bnToFloat(this.system.fee_manager.total_native_burned),
+          );
+
+          if (this.history.labels.length > MAX_HISTORY) {
+            Object.keys(this.history).forEach((k) => this.history[k].shift());
+          }
+
+          this.priceChart.data.labels = this.history.labels;
+          this.priceChart.data.datasets[0].data = this.history.ceilingEff;
+          this.priceChart.data.datasets[1].data = this.history.ceilingRaw;
+          this.priceChart.data.datasets[2].data = this.history.spot;
+          this.priceChart.data.datasets[3].data = this.history.floor;
+          this.priceChart.update("none");
+
+          this.supplyChart.data.labels = this.history.labels;
+          this.supplyChart.data.datasets[0].data = this.history.supply;
+          this.supplyChart.data.datasets[1].data = this.history.burned;
+          this.supplyChart.update("none");
+        }
+
+        log(msg, type = "info") {
+          const logEl = document.getElementById("activity-log");
+          const entry = document.createElement("div");
+          let color = "text-slate-400";
+          if (type === "success") color = "text-native";
+          if (type === "error") color = "text-red-400";
+          entry.className = `${color}`;
+          entry.innerText = `[${this.tick}] ${msg}`;
+          logEl.prepend(entry);
+        }
+
+        faucetForeign() {
+          this.user.deposit_foreign(10000n * PRECISION);
+          this.log("Faucet: +10,000 DOT", "success");
+          this.updateUI();
+        }
+
+        toggleSwapDirection() {
+          this.swapDirection =
+            this.swapDirection === "native_to_foreign"
+              ? "foreign_to_native"
+              : "native_to_foreign";
+          const isSell = this.swapDirection === "native_to_foreign";
+          document.getElementById("swap-label-pay").innerText = isSell
+            ? "Sell (Native)"
+            : "Sell (DOT)";
+          document.getElementById("swap-ticker-in").innerText = isSell
+            ? "NATIVE"
+            : "DOT";
+          document.getElementById("swap-ticker-out").innerText = isSell
+            ? "DOT"
+            : "NATIVE";
+          this.calcSwap();
+        }
+
+        calcSwap() {
+          const input = document.getElementById("swap-input").value;
+          const amount = toBigInt(input);
+          const estEl = document.getElementById("swap-estimate");
+          const routeBadge = document.getElementById("route-badge");
+          const impactEl = document.getElementById("swap-impact");
+          const detailsXyk = document.getElementById("route-details-xyk");
+          const detailsTmc = document.getElementById("route-details-tmc");
+
+          if (amount <= 0n) {
+            estEl.innerText = "0.00";
+            routeBadge.innerText = "---";
+            impactEl.innerText = "0.00%";
+            detailsXyk.classList.remove("hidden");
+            detailsTmc.classList.add("hidden");
+            return;
+          }
+
+          try {
+            if (this.swapDirection === "foreign_to_native") {
+              // BUY
+              const tmcQuote = this.system.tmc.get_mint_quote(amount);
+              const tmcOut = tmcQuote ? tmcQuote.user : 0n;
+
+              let xykOut = 0n;
+              if (this.system.xyk.has_liquidity()) {
+                const fee = BigMath.mul_div(
+                  amount,
+                  this.system.router.fee_router_ppm,
+                  PPM,
+                );
+                xykOut = this.system.xyk.get_out_native(amount - fee);
+              }
+
+              if (tmcOut > xykOut) {
+                estEl.innerText = fmt(tmcOut, 2);
+                routeBadge.innerText = "TMC MINT (BEST)";
+                routeBadge.className =
+                  "bg-native/20 text-native px-2 py-0.5 rounded text-[10px] uppercase font-bold";
+
+                detailsXyk.classList.add("hidden");
+                detailsTmc.classList.remove("hidden");
+
+                document.getElementById("tmc-user-share").innerText = fmt(
+                  tmcQuote.user,
+                  2,
+                );
+                document.getElementById("tmc-tol-share").innerText = fmt(
+                  tmcQuote.tol,
+                  2,
+                );
+              } else {
+                estEl.innerText = fmt(xykOut, 2);
+                routeBadge.innerText = "XYK SWAP";
+                routeBadge.className =
+                  "bg-dot/20 text-dot px-2 py-0.5 rounded text-[10px] uppercase font-bold";
+
+                detailsXyk.classList.remove("hidden");
+                detailsTmc.classList.add("hidden");
+
+                const spot = this.system.xyk.get_price();
+                const ideal = BigMath.mul_div(amount, PRECISION, spot);
+                const diff = ideal - xykOut;
+                const imp =
+                  ideal > 0n
+                    ? Number(BigMath.mul_div(diff, 10000n, ideal)) / 100
+                    : 0;
+                impactEl.innerText = imp.toFixed(2) + "%";
+                impactEl.className =
+                  "font-mono " + (imp > 5 ? "text-red-400" : "text-slate-300");
+              }
+            } else {
+              // SELL
+              if (!this.system.xyk.has_liquidity()) {
+                estEl.innerText = "No Liq";
+                return;
+              }
+              const fee = BigMath.mul_div(
+                amount,
+                this.system.router.fee_router_ppm,
+                PPM,
+              );
+              const out = this.system.xyk.get_out_foreign(amount - fee);
+
+              estEl.innerText = fmt(out, 2);
+              routeBadge.innerText = "XYK SWAP";
+              routeBadge.className =
+                "bg-dot/20 text-dot px-2 py-0.5 rounded text-[10px] uppercase font-bold";
+              detailsXyk.classList.remove("hidden");
+              detailsTmc.classList.add("hidden");
+
+              const spot = this.system.xyk.get_price();
+              const ideal = BigMath.mul_div(amount - fee, spot, PRECISION);
+              const diff = ideal - out;
+              const imp =
+                ideal > 0n
+                  ? Number(BigMath.mul_div(diff, 10000n, ideal)) / 100
+                  : 0;
+              impactEl.innerText = imp.toFixed(2) + "%";
+            }
+          } catch (e) {
+            estEl.innerText = "Err";
+          }
+        }
+
+        executeSwap() {
+          const input = document.getElementById("swap-input");
+          const amount = toBigInt(input.value);
+          if (amount <= 0n) return;
+          try {
+            if (this.swapDirection === "native_to_foreign") {
+              const res = this.user.sell_native(amount);
+              this.log(
+                `Sold ${fmt(amount, 2)} NAT → ${fmt(res.foreign_out, 2)} DOT`,
+                "success",
+              );
+            } else {
+              const res = this.user.buy_native(amount);
+              this.log(
+                `Bought ${fmt(res.native_out, 2)} NAT via ${res.route}`,
+                "success",
+              );
+            }
+            this.recordState();
+            this.updateUI();
+            this.calcSwap();
+          } catch (e) {
+            this.log(e.message, "error");
+          }
+        }
+
+        updateUI() {
+          document.getElementById("wallet-native").innerText = fmt(
+            this.user.balance_native,
+            2,
+          );
+          document.getElementById("wallet-foreign").innerText = fmt(
+            this.user.balance_foreign,
+            2,
+          );
+
+          const spot = this.system.xyk.has_liquidity()
+            ? this.system.xyk.get_price()
+            : 0n;
+          const ceilingRaw = this.system.tmc.get_price();
+          const ceilingEff = bnToFloat(ceilingRaw) / this.userShare; // Calc Effective for display
+
+          const floor = spot > 0n ? BigMath.mul_div(spot, 25n, 100n) : 0n;
+
+          document.getElementById("stat-spot-price").innerText =
+            spot > 0n ? fmt(spot, 4) : "---";
+
+          // Show Effective Ceiling in Stats
+          document.getElementById("stat-ceiling-price").innerText =
+            ceilingEff.toFixed(4);
+
+          document.getElementById("stat-floor-price").innerText =
+            spot > 0n ? fmt(floor, 4) : "0.0000";
+          document.getElementById("stat-supply").innerText = fmt(
+            this.system.tmc.supply,
+            0,
+          );
+
+          // Buckets
+          const tolBal = this.system.tol.get_balance();
+          let totalLp = 0n;
+          ["a", "b", "c", "d"].forEach((k) => {
+            const b = tolBal[`bucket_${k}`];
+            if (b) {
+              totalLp += b.balance_lp;
+              document.getElementById(`bucket-${k}-val`).innerText =
+                `${k.toUpperCase()}: ${fmt(b.balance_lp, 0)}`;
+            }
+          });
+          document.getElementById("tol-total-lp").innerText =
+            fmt(totalLp, 2) + " LP";
+        }
+      }
+
+      window.app = new App();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+name: Release
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  release-wasm:
+    name: Build and Release Wasm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: template
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust compilation prerequisites
+        run: |
+          sudo apt update
+          sudo apt install -y protobuf-compiler
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - name: Build the runtime Wasm
+        run: cargo build --workspace --locked --profile production
+        timeout-minutes: 90
+
+      - name: Verify Wasm runtime exists
+        run: |
+          ls -la target/production/wbuild/tmctol-runtime/
+          file target/production/wbuild/tmctol-runtime/parachain_template_runtime.compact.compressed.wasm
+
+      - name: Upload the Wasm runtime
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            template/target/production/wbuild/tmctol-runtime/parachain_template_runtime.compact.compressed.wasm
+          body: |
+            ## Parachain Runtime Release
+
+            This release contains the optimized WASM runtime for deployment with Omni Node.
+
+            ### Usage with Omni Node
+            ```bash
+            # Download the runtime
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/parachain_template_runtime.compact.compressed.wasm
+
+            # Use with polkadot-omni-node
+            polkadot-omni-node --chain=your-chain-spec.json
+            ```
+
+            ### Runtime Details
+            - **Size**: Optimized and compressed for minimal storage footprint
+            - **Profile**: Production build with LTO enabled
+            - **Target**: Built with standard wasm32-unknown-unknown target

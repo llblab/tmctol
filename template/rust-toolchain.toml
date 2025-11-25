@@ -1,0 +1,5 @@
+[toolchain]
+channel = "1.88" # pinned to version used with Polkadot SDK 2512
+profile = "minimal"
+components = [ "clippy", "llvm-tools-preview", "rust-src", "rustfmt" ]
+targets = [ "wasm32v1-none" ]

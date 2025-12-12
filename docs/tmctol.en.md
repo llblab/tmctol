@@ -218,24 +218,26 @@ Properties:
 `Floor Calculation`:
 
 ```
-k = R_TOL_native × R_TOL_foreign (constant product)
+k = R_TOL_native × R_TOL_foreign (constant product invariant)
 R_native' = R_TOL_native + S_sold
-R_foreign' = k / R_native'
-P_floor = R_foreign' / R_native'
+P_floor = k / (R_native')²
 
 Derived approximation:
-P_floor ≈ P_ceiling / (1 + 1.5s)²
-where s = S_sold/S_total
+P_floor / P_ceiling ≈ 1 / (1 + s/a)²
+where s = S_sold/S_total and a = floor support fraction (e.g. a ≈ 1/3 for Bucket_A)
 ```
 
-`Scenario Analysis`:
+`Scenario Analysis` (assuming `a = 33.3%` Base Support):
 
-| Condition                      | Sellable Fraction (s) | Floor/Ceiling Ratio | Volatility Range |
-| ------------------------------ | --------------------- | ------------------- | ---------------- |
-| User panic (33.3% sold)        | 0.333                 | 25%                 | 4×               |
-| Total abandonment (66.7% sold) | 0.667                 | 11%                 | 9×               |
+| Scenario      | Sellable Source                | Sold Fraction ($s$) | Floor/Ceiling Ratio | Volatility |
+| :------------ | :----------------------------- | :------------------ | :------------------ | :--------- |
+| `User Exit`   | Public Allocation (33%) sold   | $0.333$             | `25%`               | $4\times$  |
+| `System Exit` | Public + Treasury (B/C/D) sold | $0.667$             | `11%`               | $9\times$  |
 
-`Key Dependency`: Floor protection assumes Bucket_A (33.3% of supply) remains in TOL providing base support. If additional buckets deployed, effective floor approaches 11% minimum. If all buckets maintain reserves, floor approaches 25% maximum.
+`Key Dependency`:
+
+- `User Exit`: Represents total selling of initial public supply. With Bucket_A supporting ($a=33\%$), the floor holds at 25%.
+- `System Exit`: Represents a catastrophic scenario where Treasury buckets (B, C, D) enter circulation and are also sold. Even then, Bucket_A guarantees an 11% hard floor.
 
 ### 3.3 Ratchet Effect Analysis
 
@@ -249,12 +251,14 @@ where s = S_sold/S_total
 
 `System Interaction`:
 
-```
-When burning reduces supply by ΔS:
-- Ceiling drops: ΔP_ceiling = -m·ΔS/PRECISION
-- Floor rises: ΔP_floor ∝ ΔS/(R_TOL - ΔS)²
-- Spread compresses: convergence accelerates
-```
+When burning reduces circulating supply ($S_{circ}$) by $\Delta S$:
+
+1.  `Supply Contraction`: $S'_{circ} = S_{circ} - \Delta S$
+2.  `Floor Elevation`: The maximum potential pool balance decreases, raising the floor.
+    $$P'_{floor} = \frac{k}{(R_{native} + S'_{circ})^2} > \frac{k}{(R_{native} + S_{circ})^2}$$
+3.  `Ceiling Depression`: The minting price lowers as supply retracts.
+    $$P'_{ceiling} = P(S'_{circ}) < P(S_{circ})$$
+4.  `Result`: The price corridor compresses from both sides (Bidirectional Compression).
 
 `Floor Elevation Velocity`:
 
@@ -322,20 +326,19 @@ Net effect: spread compression with floor-ceiling convergence
 
 ### 3.5 Equilibrium Analysis
 
-`Convergence Point`:
+`Backing Equilibrium`:
 
-```
-System equilibrium occurs when price functions intersect:
-P_TMC(S_eq) = P_XYK(R_TOL, S_eq)
+The price point where the Market Cap implied by the Curve ($P \cdot S$) is fully backed by the Foreign Reserve ($R_{foreign}$).
 
-Solving yields:
-P_eq ≈ √(R_TOL × m / PRECISION)
+$$P_{eq} \approx \sqrt{R_{foreign} \cdot m_{slope}}$$
 
-Properties:
-- Proportional to √(TOL reserves)
-- Proportional to √(slope parameter)
-- Independent of initial price (long-term behavior)
-```
+`Dimensional Validation`:
+$$\sqrt{[Foreign] \cdot \left[\frac{Foreign}{Native^2}\right]} = \sqrt{\left[\frac{Foreign^2}{Native^2}\right]} = \left[\frac{Foreign}{Native}\right] = [Price]$$
+
+`Significance`:
+
+- `Gravity Well`: Price oscillates around this value as volatility stabilizes.
+- `Router Behavior`: Below $P_{eq}$, supply is "oversold" (heavy floor support). Above $P_{eq}$, supply is "premium" (utility driven).
 
 `Numerical Example`:
 
@@ -667,7 +670,7 @@ TMCTOL establishes a framework with mathematically derived price relationships a
 
 ```
 Ceiling:    P_ceiling = P₀ + m·S/PRECISION
-Floor:      P_floor = R_foreign/(R_native + S_sold)²
+Floor:      P_floor = k / (R_native + S_sold)²
 Equilibrium: P_eq ≈ √(R_TOL × m / PRECISION)
 Velocity:    dP_floor/dt ∝ burn_rate/(R_native)⁴
 ```
@@ -683,8 +686,8 @@ Velocity:    dP_floor/dt ∝ burn_rate/(R_native)⁴
 
 Floor protection operates within 11-25% range based on bucket deployment:
 
-- Maximum protection (25%): Bucket_A only providing support, others deployed
-- Minimum protection (11%): All buckets providing support, no deployment
+- Maximum protection (25%): All buckets providing support, no deployment
+- Minimum protection (11%): Bucket_A only providing support, others deployed
 - Governance controls trade-off between floor strength and ecosystem development
 
 `Realization Requirements`:

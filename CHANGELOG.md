@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2025-12-12
+
+### Fixed
+
+#### Documentation Errata (v1)
+
+- `Floor Formula Correction`: Updated floor price formula to correctly reflect constant product invariant ($P_{floor} = k / (R_{native} + S_{sold})^2$) in EN/RU docs
+- `Approximation Logic`: Replaced misleading $(1+1.5s)^2$ approximation with formally derived $P_{floor} / P_{ceiling} \approx 1 / (1 + s/a)^2$ where $a$ is floor support fraction
+- `Protection Semantics`: Clarified min/max protection scenarios (25% = all buckets supporting, 11% = only Bucket_A supporting) correcting inverted definitions
+- `Artifact Removal`: Cleaned up stray text in L2 TOL documentation and duplicate entries in Test Mirror
+
+#### Semantic Clarification
+
+- `Scenario Definitions`: Renamed scenarios to "User Exit" and "System Exit" to reflect actor behavior rather than emotional states
+- `Supply Logic`: Explicitly defined "33% Sold" as total user exit and "66% Sold" as catastrophic failure requiring treasury leakage
+- `Dependency Clarity`: Added explicit $a=33\%$ assumption to scenario tables
+
+#### Mechanism Formalization
+
+- `Ratchet Effect`: Replaced vague proportional claims with rigorous derivation showing how supply contraction reduces max potential pool balance, forcing floor elevation ($P'_{floor} > P_{floor}$)
+- `Bidirectional Compression`: Explicitly defined the simultaneous lowering of Ceiling (via curve) and raising of Floor (via burn)
+
+#### Equilibrium Logic
+
+- `Dimensional Correction`: Fixed $P_{eq}$ formula to $P \approx \sqrt{R_{foreign} \cdot m}$, resolving unit mismatch ($[Price] = \sqrt{[Foreign] \cdot [Foreign/Native^2]}$)
+- `Backing Definition`: Defined Equilibrium as the point of 100% Foreign Reserve backing for the curve-implied capitalization
+
+#### Verification & Testing
+
+- `Floor Logic Validation`: Added Test 41 (`Floor Formula & Scenario Verification`) confirming simulator behavior matches theoretical floor derivation ($P_{floor} = k/(R+S)^2$)
+- `Scenario Ratio Check`: Verified that the floor/ceiling ratio scales correctly with support fraction ($1/(1+s/a)^2$ approximation verified within 0.5% tolerance)
+- `Test Synchronization`: Updated `simulator/tests.md` mirror to include new validation coverage
+
+---
+
 ## [1.0.0] - 2025-11-01
 
 ### Added

@@ -444,9 +444,6 @@ Per-block amount: 10,000 NATIVE / 5,256,000 = 0.0019 NATIVE
 MEV profit: price_impact(0.0019) - gas_cost < 0 ✓
 ```
 
-(amount_per_block, 0)
-}
-
 ### 4.2 Treasury Participation Modes
 
 1. `One-shot seed` — Immediate swap for strategic position

@@ -227,3 +227,11 @@ Step 4: Mandatory Context Evolution:
 
 Step 5: Add substantive entry to `CHANGELOG.md` documenting changes, insights, and methodology evolution
 Step 6: Garbage Collection Evaluation Workflow
+
+---
+
+## 8. Change History
+
+- `[Current]`: Phase 12 SIMULATOR VALIDATION - Floor Formula Verification. `Problem`: Documentation claimed theoretical floor limits ($P=k/(R+S)^2$ and $1/(1+s/a)^2$ ratio) but no automated tests verified these specific mathematical properties. `Solution`: Implemented `Floor Formula & Scenario Verification` (Test 41) in simulator. Validated spot price matches theoretical floor after full user dump. Validated Floor/Ceiling ratio aligns with derived approximation ($44.4\%$ for $a=66.7\%$). `Integration`: Added test to `simulator/tests.js` and updated mirror `simulator/tests.md`. `Status`: 56/56 tests passing. Theory matches Simulation.
+- `[Previous]`: Phase 11 EQUILIBRIUM ANALYSIS - Dimensional Correction. `Problem`: $P_{eq}$ formula was dimensionally incorrect (resulting in $\sqrt{Price}$) and lacked clear definition. `Solution`: Corrected to $P_{eq} \approx \sqrt{R_{foreign} \cdot m}$ (yielding correct Price units) and defined it as the "Backing Equilibrium" where Market Cap = Reserves. `Integration`: Updated `tmctol.en.md` and `tmctol.ru.md`. `Status`: Dimensions valid, definitions rigorous.
+- `[Legacy-1]`: Phase 10 BURN MECHANICS - Ratchet Formalization. `Problem`: "Ratchet Effect" documentation relied on vague heuristics and confusing notation (`ΔS/(R-ΔS)²`) rather than physical derivation. `Solution`: Formalized the burn mechanic: Supply Contraction ($S \downarrow$) $\rightarrow$ Max Potential Pool Balance Contraction ($R+S \downarrow$) $\rightarrow$ Floor Elevation ($P = k/(R+S)^2 \uparrow$). Explicitly defined "Bidirectional Compression" (Ceiling drops via curve, Floor rises via burn). `Integration`: Updated `tmctol.en.md` and `tmctol.ru.md`. `Status`: Mathematical causality established.

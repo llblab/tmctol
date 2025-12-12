@@ -265,7 +265,6 @@ Complex economic behaviors and advanced component interactions.
 - Necessity: Proves system resistant to risk-free arbitrage
 - Validates: Fees prevent circular profit, price convergence observed
 - Additional Check: Anti-Arbitrage Cycle — repeated deterministic foreign→native→foreign cycles (e.g., 10 iterations) must be non-profitable; starting capital is non-increasing across cycles.
-- Additional Check: Anti-Arbitrage Cycle — repeated deterministic foreign→native→foreign cycles (e.g., 10 iterations) must be non-profitable; starting capital is non-increasing across cycles.
 
 ### 7.2 Minimum Trade Amount Enforcement
 
@@ -319,6 +318,14 @@ Mathematical guarantees and system-level properties that must never break.
 - Nature: Proves users receive more tokens via TMC than XYK
 - Necessity: Validates "protocol arbitrage, not user taxation" claim
 - Validates: TMC allocation > hypothetical XYK allocation for same payment
+
+### 8.3 Floor Formula & Scenario Verification
+
+- Nature: Validates the physical derivation of the floor price
+- Necessity: Proves the $P_{floor} = k/(R+S)^2$ law holds in simulation
+- Validates:
+  - Calculated spot price matches theoretical floor after simulated dump
+  - Floor/Ceiling ratio aligns with $1/(1+s/a)^2$ approximation
 
 ---
 

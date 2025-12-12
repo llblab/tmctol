@@ -100,7 +100,7 @@ const TEST_SECTIONS = [
   [5, 5], // Integration & System Flows
   [6, 3], // System Invariants & Multi-Actor
   [7, 6], // Advanced Integration Scenarios
-  [8, 2], // System Properties & Invariants
+  [8, 3], // System Properties & Invariants
   [9, 2], // Multi-User & Chaos Testing
   [10, 5], // Emergent Properties & System Intelligence
   [11, 3], // Economic Security & Attack Resistance
@@ -1172,6 +1172,63 @@ runTest("Infrastructure Premium Mathematical Proof", () => {
       );
     }
   }
+});
+
+runTest("Floor Formula & Scenario Verification", () => {
+  const system = create_system({
+    tmc: {
+      price_initial: PRECISION,
+      slope: PRECISION,
+      mint_shares: {
+        user_ppm: 333_333n,
+        tol_ppm: 666_667n,
+      },
+    },
+  });
+  const minter = system.tmc;
+  const pool = system.xyk;
+  // 1. Establish state
+  // Mint enough to have stable reserves
+  minter.mint_native(100_000n * PRECISION);
+  const R_native = pool.reserve_native;
+  const R_foreign = pool.reserve_foreign;
+  const k = R_native * R_foreign;
+  // 2. Theoretical Calculation
+  // Theoretical Floor if User dumps ALL their tokens (S_user)
+  // S_user is what users hold.
+  const total_minted = minter.supply;
+  const user_supply = (total_minted * 333_333n) / PPM;
+  const theoretical_denom = R_native + user_supply;
+  const theoretical_floor =
+    (k * PRECISION) / (theoretical_denom * theoretical_denom);
+  // 3. Simulate Dump
+  // Calculate what executing the swap would do to price
+  // We simulate by actually executing on this system instance (it's isolated)
+  pool.swap_native_to_foreign(user_supply, 0n);
+  const actual_price = pool.get_price();
+  // 4. Verify
+  assertApprox(
+    actual_price,
+    theoretical_floor,
+    1000n,
+    "Floor price matches k/(R+S)^2 formula",
+  );
+  // 5. Verify Scenario Ratio
+  const ceiling = minter.get_price(); // P(S) approx
+  const ratio = (actual_price * PRECISION) / ceiling;
+  // Expected Ratio: 1 / (1 + s/a)^2
+  // s = S_user / S_total = 0.333
+  // a = S_tol / S_total = 0.667
+  // s/a = 0.5
+  // Expected = 1 / (1.5)^2 = 1 / 2.25 = 0.4444...
+  const expected_ratio_ppm = 444_444n; // 44.4%
+  const actual_ratio_ppm = (ratio * PPM) / PRECISION;
+  assertApprox(
+    actual_ratio_ppm,
+    expected_ratio_ppm,
+    5000n,
+    "Floor/Ceiling ratio matches 1/(1+s/a)^2",
+  );
 });
 
 // 9. MULTI-USER SIMULATION

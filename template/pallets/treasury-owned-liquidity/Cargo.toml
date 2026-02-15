@@ -1,0 +1,47 @@
+[package]
+name = "pallet-treasury-owned-liquidity"
+version = "1.0.0"
+description = "Treasury-Owned Liquidity pallet implementing multi-bucket XYK pool management for TMCTOL framework"
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+license = "MIT-0"
+publish = false
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { workspace = true }
+scale-info = { workspace = true }
+frame = { workspace = true }
+polkadot-sdk = { workspace = true, features = [
+  "frame-support",
+  "frame-system",
+  "pallet-assets",
+  "pallet-balances",
+  "pallet-asset-conversion",
+  "sp-runtime",
+  "sp-std",
+  "sp-io",
+] }
+primitives = { workspace = true, default-features = false }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "polkadot-sdk/std",
+  "scale-info/std",
+  "primitives/std",
+]
+runtime-benchmarks = [
+    "polkadot-sdk/runtime-benchmarks",
+]
+try-runtime = [
+    "polkadot-sdk/try-runtime",
+]

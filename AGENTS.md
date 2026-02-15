@@ -1,237 +1,229 @@
-# Project Context
+# Project Context & Meta-Protocol
 
-## Meta-Protocol Principles
+> Capturing layered abstractions, implementation insights, and evolutionary optimization
 
-Living protocol for continuous self-improvement and knowledge evolution:
+## 0. Meta-Protocol Principles
 
-- `Boundary Clarity`: Meta-principles govern context evolution; project conventions govern domain; self-improvement never contaminates project documentation
-- `Layered Abstraction`: Protocol ≠ project; distinct evolutionary pathways; cognitive firewalls prevent conceptual contamination
-- `Domain Purity`: Project conventions reflect actual domain; preserve "how we document" vs "what we document" distinction
-- `Evolutionary Feedback`: Protocol improvements inform but never override project decisions; feedback loops create emergent intelligence
-- `Reflexive Integrity`: Context models separation it mandates; embodies own design principles through recursive application
-- `Emergent Elegance`: Multiple iterations reveal constraints guiding toward patterns; complexity reduction emerges from understanding, not premature simplification
-- `Progressive Enhancement`: At 95%+ quality, targeted additions beat wholesale replacement; incremental improvement surpasses architectural revolution
-- `Knowledge Lifecycle Management`: Periodic garbage collection consolidates overlapping concepts by cognitive function, transforms tactical → strategic; proactive evolution, not technical debt
-- `Emergent Property Validation`: Component interactions require explicit testing/documentation—features not bugs; emergent behaviors signal maturity
-- `Structural Symmetry`: Test organization mirrors architecture; structure emerges from behavioral patterns; test-system conceptual integrity creates multiplicative quality
-- `Morphological-First Decision Making`: Analyze solution space before implementing—map extremes, identify trade-offs, document triggers; applies to evaluating existing systems and designing new ones
-- `Framework Evaluation Methodology`: Dual-phase (morphological mapping + recursive decomposition) reveals dimensional intersections and critical transitions invisible to single-phase
-- `Specification Maturity`: Documentation evolves exploratory → consolidated; analysis matures → satellite documents merge to canonical; code illustrates, simulators define truth
-- `Cognitive Scaffolding`: Layered understanding—progressive comprehension frameworks; each abstraction enables deeper insight into next
-- `Constraint-Driven Evolution`: Evolution follows constraint discovery; each iteration reveals boundaries guiding refinement; constraints are catalysts not limitations
-- `Necessary Complexity`: Constraint-discovered complexity ≠ accidental complexity; evolved architectures solve discovered constraints; defend against simplification discarding insights; complexity enabling elegance is feature
+This document is a living protocol for continuous, intelligent self-improvement and optimal knowledge evolution. Its core principles govern how this context system manages itself and are universally applicable to any project:
+
+- `Mandatory Self-Improvement`: Every task ends with context updates, creating self-reinforcing knowledge accumulation. Protocols enforce their own effectiveness through positive feedback loops.
+- `Protocol Evolution`: Rules improve when better workflows emerge. Feedback loops create emergent intelligence; context embodies the design principles it mandates.
+- `Test-Driven Evolution`: Comprehensive validation enables clean evolution through systematic patterns and self-correcting feedback loops.
+- `Context Optimization`: Systematically prevent infinite growth through proactive cleanup. Transform tactical experiences into strategic wisdom. Evolution includes both addition AND consolidation.
+- `Change History Rotation`: Fixed entry limits through intelligent consolidation. Newer entries provide tactical details, older entries preserve strategic patterns.
+- `Non-Duplication Enforcement`: Information exists in only one authoritative section. Create hierarchical navigation instead of duplicating content.
+- `Decreasing Abstraction Structure`: Organize from general to specific, mirroring optimal cognitive processing patterns.
+- `Validation Infrastructure`: Automated validation of structure, cross-references, and information architecture. Pre-task preparation and completion protocols ensure quality gates are never skipped.
+- `Living Hierarchical Documentation`: Documentation mirrors system architecture and evolves with implementation. Design intent stays synchronized with actual behavior.
+- `Boundary Clarity`: Meta-principles govern context evolution; project conventions govern domain. Protocol ≠ project; distinct evolutionary pathways with cognitive firewalls preventing contamination.
+- `Emergent Elegance`: Multiple iterations reveal constraints guiding toward patterns; complexity reduction emerges from understanding, not premature simplification.
+- `Progressive Enhancement`: At 95%+ quality, targeted additions beat wholesale replacement; incremental improvement surpasses architectural revolution.
+- `Emergent Property Validation`: Component interactions require explicit testing/documentation. Test organization mirrors architecture; structural symmetry creates multiplicative quality.
+- `Morphological-First Decision Making`: Analyze solution space before implementing—map extremes, identify trade-offs. Dual-phase analysis reveals dimensional intersections invisible to single-phase.
+- `Specification Maturity`: Documentation evolves exploratory → consolidated. Each abstraction layer enables deeper insight through progressive comprehension frameworks.
+- `Constraint-Driven Evolution`: Evolution follows constraint discovery; constraints are catalysts not limitations. Evolved architectures solve discovered constraints; defend against simplification discarding hard-won insights.
 
 ---
 
-## 1. Overall Concept
+## 1. Concept: The TMCTOL Standard
 
-A token launch mechanism specification that combines minting curves with automatic treasury-owned liquidity generation through optimized Zap mechanics to create self-sustaining token economies with mathematically guaranteed price boundaries. The system exhibits emergent properties that enhance security and stability beyond designed mechanisms.
+The project is a `Specification & Reference Framework`.
+
+1.  `The Core (TMCTOL)`: A rigorous economic specification for a Token Minting Curve combined with Treasury-Owned Liquidity. It defines the mathematical laws of a self-sustaining economy.
+2.  `The Framework (`/template`)`: A production-ready, forkable `Polkadot SDK Parachain Template`. It implements the TMCTOL standard using modern Polkadot SDK 2512 patterns (Omni Node, Frame V2).
+
+`Goal`: Provide a "Foundation in a Box" for launching independent ecosystems with mathematically guaranteed liquidity infrastructure, achieving production-ready reliability through test-driven evolution with 100% validation.
+
+---
 
 ## 2. Core Entities
 
-### 2.1 Primary Protocol:
+### 2.1 Abstract Economic Actors (The Specification)
 
-- `TMCTOL`: Token Minting Curve + Treasury-Owned Liquidity with mathematically guaranteed price boundaries (See: `tmctol.en.md`)
-- `L2 TOL`: Second-layer DAOs with declining voting power and constant L1 TOL protection (See: `l2-tol.en.md`)
+_Defined in `/simulator`, agnostic of blockchain framework._
 
-### 2.2 Mechanisms:
+- `TMC (Curve)`: The unidirectional emission engine ($P = P_0 + slope \cdot s$). Controls token emission through a deterministic economic machine.
+- `TOL (Liquidity)`: The multi-bucket accumulator ensuring a rising price floor.
+- `Gravity Well`: The emergent state where TOL accumulation stabilizes volatility (~15% MarketCap).
+- `Elasticity Inversion`: The mathematical point where inflation strengthens the price floor.
 
-- `TMC`: Linear bonding curve (P = P₀ + slope·s) for predictable emission
-- `Axial Router`: Price discovery gateway routing TMC vs XYK optimally (See: `axial-router.en.md`)
-- `TOL Multi-Bucket`: 66.6% minted supply → 4 independent buckets (~100% capital utilization through deployment cycles)
-- `Fee Burning`: Router 0.5% → 100% burn for systematic deflation
-- `Zap`: Intelligent liquidity addition handling price imbalances
+### 2.2 Concrete Implementation Entities (The Framework)
 
-### 2.3 Emergent Properties:
+_Implemented in `/template/pallets`, bound by Substrate logic._
 
-- `Price Ratchet`: TOL accumulation + fee burning → ever-rising floor
-- `Bootstrap Gravity Well`: Critical TOL threshold (~15% market cap) → system stability transition
-- `Supply Elasticity Inversion`: Post-threshold, inflation raises (not lowers) minimum price
+- `Parachain Runtime`: The aggregator of pallets, utilizing `Runtime-as-Config` adapters and modern FRAME patterns.
+- `Axial Router`: The execution gateway enforcing fee burning and optimal routing. It acts as an economic coordination actor determining "Efficiency Score" to arbitrate between Market Liquidity (XYK) and Protocol Liquidity (TMC).
+- `Zap Manager`: Deterministic state machine for complex liquidity provisioning.
+  - `"Omnivorous Intake"`: Scans balances (`on_initialize`) rather than relying on specific extrinsics, processing any asset that arrives at the system account.
+  - `"Opportunistic Liquidity Provisioning"`: Maximizes liquidity addition in current pool ratios without pre-swap balancing.
+  - `"Patriotic Accumulation"`: Explicitly prefers holding Native surplus over selling it for Foreign assets, treating Native token as sovereign collateral.
+  - `Resilience`: Uses `RetryCooldown` to prevent resource exhaustion during oracle unavailability.
+- `Burning Manager`: Consumes native tokens and swaps foreign tokens through token-driven fee architecture.
+- `Adaptors`: The translation layer mapping Abstract Actors to Substrate types (e.g., mapping `PPM` math to `Permill` arithmetic).
+- `Asset Conversion`: Uniswap V2-like DEX for automated market making, utilizing `AssetKind` with Bitmask-based classification.
+- `Omni Node`: Primary deployment architecture eliminating node boilerplate.
 
 ---
 
 ## 3. Architectural Decisions
 
-### 3.1 Core Mechanics
+### 3.1 Meta-Architecture: Spec vs. Impl
 
-- `Unidirectional Minting`: One-way token creation prevents reserve extraction; creates mathematical lock-in for long-term alignment
-- `Linear Pricing`: Fair, predictable progression (P = P₀ + slope·s); enables precise equilibrium calculations
-- `Automatic TOL`: 66.6% mint allocation to protocol-owned liquidity; creates bootstrap gravity well and supply elasticity inversion
+- `Specification (JS)`: Uses infinite precision (BigInt) and `PPM` (Parts Per Million) for ratios. Focuses on _ideal_ behavior.
+- `Implementation (Rust)`: Uses `u128`, `Permill`/`Perbill` (Substrate primitives), and `FixedU128`. Focuses on _determinism_ and _weight safety_.
+- `Bridge`: We explicitly validate that Implementation drift (due to rounding/types) remains within safe bounds defined by the Specification.
+- `Manifesto-Driven Architecture`: Explicit separation of L1 Strategy (Mathematical Sovereignty via TMC) from L2 Tactics (Democratic Allocation via Buckets). "Bad Politics cannot kill Good Physics."
 
-### 3.2 TOL Multi-Bucket Architecture
+### 3.2 Engineering Architecture (`/template`)
 
-- `Multi-Bucket Strategy`: 4 independent buckets with varied governance thresholds (50%:16.667%:16.667%:16.666%); ~100% capital utilization through continuous deployment cycles (temporary buffers recycled into subsequent mints) vs 0% traditional treasuries (idle vaults); 50%+ failure resilience (survives loss of 3 smaller buckets)
-- `Share-Based Withdrawal`: LP tokens managed as shares (not absolute amounts); mathematical correctness, no edge cases from pool state changes
-- `Floor Protection Range`: Effective floor varies 11-25% based on bucket deployment decisions; governance explicitly trades floor strength for ecosystem development
+- `Polkadot SDK 2512 Standard`:
+  - `Omni Node`: Deployment architecture eliminating node boilerplate. Node-level features (DHT bootnode discovery, `ParachainTracingExecuteBlock`, `collator_peer_id`) are handled by the Omni Node binary — no custom `node/` directory.
+  - `Frame V2`: Strictly typed `#[frame::pallet]`, `frame_benchmarking::v2`.
+  - `Token-Driven Coordination`: State transitions are triggered by asset movement (Substrate hooks), not Signed Extrinsics. This ensures origin-agnostic security.
+  - `Runtime-as-Config`: Business logic (Pallets) is generic. Configuration (Runtime) injects specific behavior via Adapters following SDK patterns for clean separation.
+  - `Unified Primitives`: `primitives/src/ecosystem.rs` is the single source of truth for constants, avoiding magic numbers. `AssetKind` uses bitmask classification for O(1) type inspection.
+  - `Type System Discipline`: Enforced strict `sp_arithmetic::Permill` for ecosystem parameters. Adopted `sp_core::U256` for bonding curve calculations to prevent intermediate overflows.
+  - `assets-common Rejected`: The `assets-common` crate (Location-as-AssetId, TrustBacked, ERC20/pallet-revive) is designed for Asset Hub pattern. Incompatible with TMCTOL's `u32` bitmask + `pallet-asset-registry` architecture. `pallet-asset-registry` already provides `MaybeEquivalence<Location, AssetId>`.
+- `Stateful Testing`: Mocks use `RefCell<BTreeMap>` for realistic AMM simulation and TMC behavior, enabling "Mechanism Verification" over simple policy checks.
 
-### 3.3 Mathematical Foundations
+### 3.3 Economic Architecture
 
-- `Dimensional Type System`: Type system as physics engine—`Price [Foreign/Native²]` uses PRECISION (10¹²); dimensionless ratios use PPM (10⁶); prevents categorical errors at compile-time
-- `Guaranteed Price Boundaries`: Calculable floor/ceiling formulas via permanent TOL accumulation; protection ranges 11-25% contingent on governance maintaining parameters
-- `Bidirectional Compression`: Burning lowers ceiling, TOL raises floor → convergence creates mathematical security traps
-- `XYK Constant Product Necessity`: Constant product (x·y=k) guarantees liquidity at all price levels; XYK "inefficiency" is precisely its strength for floor protection
-- `Equilibrium Analysis`: System converges to P_eq ≈ √(R_TOL × m / PRECISION); equilibrium explicitly depends on governance-maintained parameters
-- `Fee Consistency Principle`: Quote and execution must apply fees identically; XYK uses "fee on input" model (amount_in × (1 - fee)) in both paths; inconsistency invisible at fee=0 but breaks routing logic when activated
-- `Fair Rounding Strategy`: Largest remainder method for distribution prevents systematic bias; ostatok (remainder) allocated to party with maximum fractional part; eliminates long-term drift from "remainder always goes to X" patterns
-
-### 3.4 L2 TOL Governance
-
-- `Declining Voting Power`: Direct holders 10x → 1x linear decay; prevents last-minute manipulation
-- `Constant L1 TOL Protection`: L1 TOL maintains 10x (no decay); balanced ecosystem protection without extreme multipliers
-- `Invoice Voting`: DOUBLE/APPROVE/REDUCE/VETO mechanics; VETO binary (>50% blocks), evaluations determine pricing multiplier
-- `Progressive Rewards`: Active voters earn ~2x vs passive; economic incentive for participation
-
-### 3.5 System Architecture
-
-- `Router as Gateway`: Universal entry point ensures optimal price discovery, fee collection, consistent behavior
-- `Zap-Based Liquidity`: Intelligent strategy handles price imbalances; maximizes depth when XYK lags TMC; excess foreign swapped to native (buffered for next mint maximizes long-term protocol profit, optimized computation, MEV-resistant determinism)
-- `XYK Pool Mandatory`: Constant product (x·y=k) guarantees liquidity at ALL price levels; XYK "inefficiency" prevents complete depletion
-- `Fee Burning`: Router 0.5% → 100% burn for deflation; creates friction preventing infinite mint-swap avalanches
-- `Buffer Ownership Clarity`: Buffers live where concept lives—Tol buffer (awaiting zap) vs Bucket LP (owned liquidity); intermediate state without semantic value signals architectural redundancy; "distribute then immediately collect" pattern reveals evolved complexity
-- `Method Return Minimalism`: Return only what callers use; if method has side effects (state modification), returning detailed decomposition of those effects creates redundancy when state is directly queryable; zap methods modify buckets (side effect) → return only aggregates, callers query buckets for details
-- `Internal Slippage Protection`: Fee manager foreign→native conversion uses 10% slippage tolerance based on spot price; prevents price manipulation attacks on burn mechanism; graceful degradation (buffering) when threshold exceeded
-
-### 3.6 Testing & Validation
-
-- `Simulator as Verification`: JavaScript/BigInt pre-production validation; 55 hierarchical RADB tests (see Section 6.6: Testing Wisdom Patterns) reveal emergent properties through multi-actor flows
-- `Attack Simulation`: Economic attack scenarios beyond mathematical correctness; governance resilience, cross-chain independence, sandwich attack resistance validated through multi-actor simulation
-- `Validation Hierarchy`: Simulator (mathematical correctness) → Testnet (economic attack surface) → Mainnet (empirical parameter tuning); each layer addresses different constraint categories; production readiness requires coverage across all dimensions
+- `Unidirectional Minting`: A mathematical "Ratchet" preventing reserve extraction.
+- `Bidirectional Compression`: Burning lowers the ceiling; TOL raises the floor. The price corridor compresses upwards.
+- `Multi-Bucket Strategy`: 4-bucket system (50/16/16/16) ensures ~100% capital utilization while preserving governance segmentation.
+- `Mechanism-Over-Policy`: The Router acts as a pure mechanism (XYK vs TMC) rather than a policy engine, reducing attack surface.
 
 ---
 
-## 4. Emergent Properties Layer
+## 4. Project Structure
 
-### 4.1 Critical System Transitions
-
-System exhibits phase transitions at thresholds where qualitative behavior changes discontinuously:
-
-- `Bootstrap Gravity Well`: ~15% TOL/market-cap threshold (fragile → stable); below: high volatility, market-driven; above: stability emergence, mechanism convergence; monitor ratio, alert at threshold; governance shifts from accumulation focus to strategic deployment
-- `Supply Elasticity Inversion`: Critical supply where inflation raises (not lowers) floor; floor growth exceeds ceiling growth (TOL quadratic effect); post-inversion minting strengthens floor vs dilutes
-- `Legitimacy Phase`: Exploratory → academic transition; conditional guarantees, dimensional analysis, governance dependencies; enables regulatory review; TMCTOL v1.0.0 complete
-- `Decentralization Handoff`: Super-user → team veto → progressive reduction → DAO; premature=vulnerable, delayed=low ownership; monitor participation, proposal quality, attacks
-
-### 4.2 Security Enhancements
-
-- `Vesting Cliff Math Trap`: Team tokens mathematically difficult to exit (additional protection beyond smart contracts); monitor ceiling-floor gap, team fraction of TOL
-- `Treasury Deadlock Security`: Governance paralysis increases effective lock ratio; system more secure during disputes; floor calculation includes governance state
-- `Governance Attack Resilience`: Mathematical constraints protect against distribution manipulation; extreme changes cannot compromise floor (XYK invariant creates value extraction traps); monitor distribution changes, floor preservation
-- `Cross-Chain Economic Independence`: Each chain autonomous despite bridge failures; price divergence, TOL concentration don't compromise floor (XYK invariant operates independently); monitor TOL distribution, individual chain floors
-
-### 4.3 Economic Behaviors
-
-- `Mint-Swap Feedback Loop`: TMC mints degrade XYK prices → TMC more attractive (self-reinforcing); router fees (0.5%) prevent infinite avalanches; monitor consecutive TMC routes, price divergence
-- `Slope Efficiency Sublinearity`: Equilibrium ∝ √slope (not linear); diminishing returns on slope increases; P_eq ≈ √(R_TOL × m / PRECISION)
-- `Price Ratchet Acceleration`: Deflation compounds floor growth (bidirectional compression: burning lowers ceiling, TOL raises floor); velocity ∝ burn_rate/(R_native)⁴; superlinear acceleration creates progressive stability
-
-### 4.4 Dimensional Intersection Innovations
-
-Framework occupies unique positions at dimensional intersections:
-
-- `Security × Efficiency`: Floor (11-25%) WITHOUT idle capital; TOL in active XYK (~100% utilization) vs vaults (0%); resolves "protection requires reserves" vs "efficiency requires deployment"
-- `Decentralization × Safety`: Progressive handoff WITHOUT binary transition; phased veto (super-user → team → DAO) maintains security while transferring control
-- `Complexity × Elegance`: Multi-component (TMC+4-bucket+Router+Zap+Fee) WITH emergent simplification; necessary complexity creates emergent properties (gravity well, elasticity inversion) simplifying long-term behavior
-- `Rigor × Flexibility`: Verifiable formulas WITH flexible deployment; hard constraints (XYK invariant, conservation) coexist with soft parameters (bucket allocation, fees); separates "what math guarantees" from "how governance deploys"
-- `Discovery × Resistance`: Responsive oracle (half-life EMA) WITH attack resistance (TVL-weighted, deviation limits); avoids "slow secure" vs "fast vulnerable" dichotomy
-
-Intersection positions create competitive moats through novel constraint resolution—simpler alternatives cannot reach these positions.
+- `/docs/`: The Knowledge Base. Architecture guides, specs, mathematics.
+- `/simulator/`: `The Source of Truth`. JavaScript/BigInt implementation of the Economic Standard.
+- `/template/`: `The Reference Implementation`.
+  - `/template/runtime/`: The Parachain assembly.
+    - `/weights/`: The Bridge between generated benchmarks and runtime configuration.
+  - `/template/pallets/`: Modular logic (`axial-router`, `tmctol`, `burning-manager`, `zap-manager`).
+  - `/template/primitives/`: Unified types (`assets.rs`, `ecosystem.rs`).
+  - `/template/node/`: (Minimal) Omni Node configuration.
+- `/scripts/`: Automation (Simulation runners, Benchmark generators).
+- `AGENTS.md`: `(You are here)`. The Cognitive Core.
 
 ---
 
-## 5. Project Structure
+## 5. Development & Evolution Conventions
 
-- `/docs/`: Specifications (tmctol/l2-tol/axial-router `.en.md` + `.ru.md`, README.md architecture guide)
-- `/simulator/`: JavaScript/BigInt verification (model.js, tests.js 55 hierarchical tests, tests.md mirror)
-- `AGENTS.md`: Meta-protocol + architectural decisions + conventions ("how we work")
-- `CHANGELOG.md`: Evolution history ("what we learned")
-- `README.md`: Project overview
-- `LICENSE`: MIT
+### 5.1 The Three-Layer Validation
 
----
+Truth is established in three stages. Skipping a stage is forbidden.
 
-## 6. Development Conventions
+1.  `Simulation (Mathematical Truth)`:
+    - _Location_: `/simulator`.
+    - _Tooling_: JavaScript/BigInt, `PPM`.
+    - _Purpose_: Verifies the formula is correct before any code is written.
+2.  `Implementation (Behavioral Truth)`:
+    - _Location_: `/template/pallets`.
+    - _Tooling_: Rust, `Permill`, Unit Tests, Benchmarks.
+    - _Purpose_: Verifies the Rust code matches the Math and fits within Block Weight limits.
+3.  `Integration (Systemic Truth)`:
+    - _Location_: `/template/runtime`.
+    - _Tooling_: Integration Tests, XCM.
+    - _Purpose_: Verifies components coordinate correctly (e.g., "Does a swap trigger the burn hook?").
 
-### 6.1 Documentation Standards
+### 5.2 Benchmarking Standard
 
-- `Documentation`: Reflect changes with rationale | `Code Examples`: Rust; code illustrates, simulator defines | `Language`: English only | `Mathematical Precision`: Formulas validated with derivations/edge cases | `Implementation Fidelity`: Preserve correctness in optimizations | `Clarity`: Each concept once in logical context | `KISS`: Balance simplicity/accuracy; oversimplification worse than appropriate complexity | `Precision > Brevity`: Never sacrifice correctness | `Primacy`: Core spec contains math; consolidate when mature
+_Context: Applied strictly within `/template`._
 
-### 6.2 Progressive Evolution: Legitimacy Phase
+- `Syntax`: `frame_benchmarking::v2::*`.
+- `Metrics`: Mandatory measurement of `RefTime` (Computation) AND `ProofSize` (Storage Access).
+- `Complexity`: Explicit `Linear<Min, Max>` components.
+- `Hygiene`: No assumptions. Mock the worst-case state (full storage) in `SETUP` using `whitelisted_caller()`.
+- `Stateful Benchmarking`: Use `BenchmarkHelper` traits to bridge mock runtimes with benchmarking requirements.
 
-Continuous refinement toward academic legitimacy:
+### 5.3 Coding Standards
 
-- `Eliminate Marketing`: "Revolutionary" → precise technical | `Conditional Guarantees`: Claims marked with dependencies; no absolutes | `Mathematical Rigor`: Formulas with dimensional analysis, boundaries, proofs | `Governance Transparency`: Properties labeled "governance-dependent" | `Framework vs Promises`: Bounds not outcomes | `Mechanism > Rhetoric`: HOW not promises | `Null Hypothesis`: Lead with failure modes | `Temporal Honesty`: Floor exists when conditions met | `Audit Trail`: Claims → proofs/tests
+- `Zero Warnings`: Maintain zero clippy warnings. Resolve redundant pattern matching, collapsible ifs, useless conversions.
+- `Clean Imports`: Use unified `polkadot_sdk::*` imports over fragmented crate-specific imports.
+- `No License Headers`: Do not include license headers or copyright notices at the beginning of source files.
+- `Complexity Resolution`: When facing integration challenges, simplify abstractions progressively. Substrate compilation failures are architectural feedback.
+- `Antifragile Simplicity`: Default to the simplest deterministic rule that preserves invariants. Add complexity only when a concrete failure mode or constraint proves it necessary.
+- `Workspace Lint Hygiene`: `Cargo.toml` must declare `unexpected_cfgs` with Substrate-specific cfg values (`substrate_runtime`). Clippy lints must track upstream parachain template — currently 25 rules.
+- `SDK Version Tracking`: `substrate-wasm-builder` version must match polkadot-sdk umbrella (2512.1.0 → 31.1.0). `system_version` in `RuntimeVersion` must be `1` for SDK 2512.
 
-### 6.3 Technical Implementation
+### 5.4 Evolution Protocol
 
-- `Iteration → Elegance`: Work first, elegance second; patterns emerge from constraints | `Simulation vs Production`: Fallbacks reveal inconsistencies demanding normalization | `Closure as Architecture`: JS closures solve dependency injection elegantly
-- `Evolved vs Necessary Complexity`: Architectural debt accumulates as "intermediate state without semantic value"—if you distribute then immediately collect, question the distribution; complexity solving discovered constraints ≠ complexity from iterative accretion; example: bucket buffers (distributed pre-zap, collected for unified zap) vs single Tol buffer (awaiting zap); refactor trigger: "where does concept live?" guides state ownership
+- `Forkability`: Changes in `/template` must maintain generic utility. Do not hardcode ecosystem-specific logic into the generic framework components.
+- `Emergent Complexity`: Features like "Gravity Well" are `evolved complexity`. They are protected. Complicated spaghetti code is `accidental complexity`. It is destroyed.
 
-### 6.4 Dimensional Analysis Discipline
+### 5.5 Runtime Integration Protocol
 
-- `Physical Types`: Variables convey magnitude AND dimension (`Price [Foreign/Native]`, `Slope [Foreign/Native²]`) | `Scaling Semantics`: PPM (10^6) dimensionless vs PRECISION (10^12) physical | `Terminology`: Domain-specific (`Native`, `Foreign`) over generic | `Consistency`: Operations preserve dimensional correctness | `Derivations`: Verify dimensions each step
+_Context: Bridging Pallet Logic to Runtime Reality._
 
-### 6.5 Naming Consistency Patterns
+- `The Weight Bridge`: Generated weights (`/pallets/*/src/weights.rs`) are templates. Real weights live in `/runtime/src/weights/`. We copy, adapt, and expose them.
+  - _Why_: Generated code often misses context-specific imports (e.g., `polkadot_sdk::*`) or trait bounds.
+  - _Action_: Create a bridge module in runtime that implements the pallet's `WeightInfo` trait using the generated numbers.
+- `Configuration-as-Code`: Runtime `configs/*.rs` must point to `crate::weights::pallet_name::WeightInfo`. Never leave `()` or placeholder implementations in production.
+- `On_Idle Safety`: Verify `BlockWeights` configuration leaves sufficient margin (e.g., 75% Dispatch Ratio) for `on_idle` tasks (automatic cleanup/swapping).
+- `Upstream Sync Protocol`: When syncing with `paritytech/polkadot-sdk-parachain-template`, classify each change: (a) `SDK-standard` — adopt (lint rules, build tooling, RuntimeVersion); (b) `Ecosystem-pattern` — evaluate against project architecture before adopting (`assets-common`, `ForeignCreators`); (c) `Business-logic` — skip (XCM routing, pallet composition).
 
-- `Type-First`: Lead with domain (`native_`, `foreign_`); never bare `fee` | `Context-Aware`: Local → simpler, returns → full context | `Dimensional Prefix`: Names reflect dimension; annotations balance clarity
+### 5.6 Network Integration Protocol
 
-### 6.6 Testing Wisdom Patterns
+_Context: Handling Foreign Assets and XCM._
 
-- `Deep Reading`: Testing lurks behind interfaces; outlines deceive—read originals | `Enhancement`: At 95%+ quality, surgical > rewrites | `Validation Hierarchy`: Simulator → Testnet → Mainnet; math≠security—each layer addresses different constraints | `RADB (Recursive Abstraction Decomposition with Behavioral grouping)`: Hierarchical test sections mirror abstraction layers; codes (Section.Position) enable navigation; structure communicates design—Math (1-3) → Core (4) → Integration (5-9) → Emergent (10) → Security (11-12); component placement reveals architecture | `Coverage`: Production spans math, behavior, invariants, integration, emergent, security | `Triple-Sync`: Code+tests+docs parallel; static → liability | `Failure Interpretation`: Bugs OR evolution—distinguish error from change | `Monitoring Gateway`: Infrastructure required before production; tests → logic, monitoring → runtime
-
-### 6.7 Meta-Protocol Boundary Testing
-
-- `Universal Applicability`: Meta never references project-specific | `Contamination`: Domain → Architectural Decisions | `Refinement`: Feedback reveals violations
-
-### 6.8 Framework Assessment Patterns
-
-- `Dimensional Positioning`: Map across solution space; reveals trade-offs/targets | `Intersection Innovation`: Unique positions achieving mutually exclusive properties; create moats | `Evolution Vectors`: Map paths; identify transitions; document monitoring | `Constraint Classification`: Hard (invariants) vs soft (parameters) vs evolutionary (emergent) | `Complexity Defense`: Document constraint → solution; defend against simplification discarding insights | `Empirical Gaps`: Simulator≠testnet≠mainnet; gap analysis guides validation
-
-### 6.9 Architectural Refactoring Patterns
-
-- `Symmetry Violations Signal Bugs`: Quote and execution paths must be identical; invisible at zero values, catastrophic when activated; test asymmetric code paths with non-zero parameters even if defaults are zero
-- `Rounding Bias Accumulation`: "Remainder always goes to X" creates systematic drift over many operations; largest remainder method (allocate to max fractional part) achieves mathematical fairness without state
-- `YAGNI in Architecture`: Single-client abstractions without demonstrated constraint = premature; ZapManager seemed clean but solved no problem; deep integration + no reuse = keep together; extraction criteria: (1) second client exists, (2) clarity significantly improves, (3) discovered constraint demands separation
-- `State Ownership Questions`: Ask "where does concept live?" not "how to organize code?"; buffer = "awaiting transformation" → lives in transformer; bucket = "owns result" → stores only result; intermediate distribution without semantic purpose reveals evolved (not necessary) complexity
-- `Distribute-Collect Anti-Pattern`: If operation (1) distributes state, (2) immediately collects it back, (3) operates on total, then distribution is architectural debt; signals either: premature abstraction from earlier design, or misplaced responsibility; refactor: push distribution to where it creates semantic value (after operation, not before)
-- `Return Value Redundancy`: Methods returning detailed decomposition (lp_a, lp_b, native_a, etc.) when callers only use aggregates or fetch details from source objects; if returned fields duplicate state already stored elsewhere, return only what callers actually need; pattern: function modifies state + returns copy of modifications = redundancy; solution: return aggregates, let callers query state directly
-- `Single Source of Truth Principle`: Information should exist in exactly one authoritative location; bucket.lp_tokens is truth, not result.lp_a; duplication creates synchronization burden and illusion of independent data; test: can fields drift apart? if yes, eliminate duplication; distributed state must have semantic independence (different owners, different lifecycles), not just structural decomposition
-
-### 6.10 Meta-Methodology Patterns
-
-`Framework Evaluation Insights`:
-
-- `Morphological-First Evaluation`: Map solution space before improving—identify dimensions, extremes, vectors, intersections | `RADB as Documentation`: Tests communicate design clearer than prose | `Three-Layer Validation`: Simulator → Testnet → Mainnet (no skipping); each addresses different constraints | `Phase Transition Modeling`: Document thresholds, procedures, monitoring | `Intersection Innovation Recognition`: Identify trade-off resolutions at dimensional intersections | `Complexity Defense Framework`: Constraint → solution traceability; simpler alternatives fail | `Empirical Gap Analysis`: Plan testnet explicitly; avoid correctness=readiness fallacy | `Evolution Vector Planning`: Dimensional positioning not feature lists
-
-`Application Template`: Morphological Analysis (dimensions, extremes, intersections) → Recursive Decomposition (goal, constraint → solution) → Validation Hierarchy (simulator → testnet → mainnet) → Strategic Evolution (vectors, tuning, defense)
-
----
-
-## 7. Pre-Task Preparation Protocol
-
-Step 1: Load `/docs/README.md` for documentation architecture
-Step 2: Integrate entity-specific documentation for task context
-Step 3: Verify alignment with architectural decisions and conventions
-Step 4: Document knowledge gaps for future enhancement
-Step 5: Review emergent properties implications for current task
+- `Hybrid Registration Protocol`: Foreign assets use a "Hybrid Registry" pattern combining deterministic hashing with storage persistence.
+  - _Mechanism_: Asset IDs are generated via `Blake2(Location)` ONLY upon initial registration. This mapping (`Location -> AssetId`) is permanently stored in `pallet-asset-registry`.
+  - _Why_: Pure hashing is vulnerable to XCM version upgrades changing `Location` encoding (and thus hashes). Storage persistence allows migration (updating `Location` keys while preserving `AssetId` values) without breaking user balances.
+  - _Action_: Governance calls `register_foreign_asset`, which generates the ID, locks the mapping, and initializes the asset in `pallet-assets`.
+- `Token-Domain Bootstrap Protocol`: Runtime glue hooks on Asset Registry registration and TMC curve creation must remain idempotent and deterministic. Preferred default mapping is `tol_id = token_asset_id` for non-LP assets, with governance override available via explicit binding extrinsics.
+- `Sovereign Liquidity`: The Parachain treats itself as a sovereign entity. It does not trust foreign chains to manage its liquidity; it pulls assets into its own local `pallet-assets` registry via XCM Reserve Transfers.
 
 ---
 
-## 8. Task Completion Protocol
+## 6. Pre-Task Preparation Protocol
 
-Step 1: Verify architectural consistency (sections 3-5)
-Step 2: Execute quality validation: `deno ./simulator/tests.js` (55 tests, hierarchical X.Y codes) and verify `./simulator/tests.md` mirror (section counts and names) is synchronized
-Step 3: Update `/docs/README.md` guides for affected entities
-Step 4: Mandatory Context Evolution:
+`Before executing any task, the Agent must`:
 
-- Analyze architectural impact
-- Update sections 1-6 for currency
+1.  `Decompose`: Is this a Spec change (Math) or an Impl change (Code)?
+2.  `Locate Truth`:
+    - If Math: Consult `/simulator`.
+    - If Code: Consult `/template` patterns and `AGENTS.md` conventions.
+3.  `Documentation Review`:
+    - Review `/docs/README.md`.
+    - If touching specific entities (e.g., Axial Router), read their specific guides.
+4.  `Context Check`: Ensure mental model aligns with current Architecture.
 
-Step 5: Add substantive entry to `CHANGELOG.md` documenting changes, insights, and methodology evolution
-Step 6: Garbage Collection Evaluation Workflow
+---
+
+## 7. Task Completion Protocol
+
+`The sequence for "Done"`:
+
+1.  `Validation`:
+    - Math holds? (`node ./simulator/tests.js`)
+    - Code compiles? (`cargo check --workspace`)
+    - Tests pass? (`cargo test`)
+    - Weights valid? (`cargo test --features runtime-benchmarks`)
+2.  `Hygiene`:
+    - Zero Clippy warnings (`cargo clippy --workspace --all-targets -- -D warnings`).
+    - Code formatted.
+3.  `Knowledge Sync`:
+    - Update `/docs` if logic changed.
+    - Update `AGENTS.md` if _patterns_ or _wisdom_ evolved.
+    - Add substantive Change History entry with task, implementation, impact, insights
+    - Change History structure: `[Current]` → `[Previous]` → `[Legacy-0]` → `[Legacy-1]` → `[Legacy-2]` (newest first)
+    - Update `CHANGELOG.md`.
+4.  `Garbage Collection` (if AGENTS.md exceeds 300 lines):
+    - Trigger garbage collection phase
+    - Change History: keep max 3 Legacy entries; drop oldest, extract lasting insights into sections 3-5
+    - Analyze bloat sources: prune verbose sections outside Change History (redundant references, over-detailed patterns)
+    - Preserve: architectural decisions rationale, philosophical foundations, active conventions
+    - Remove: implementation minutiae superseded by code, resolved open questions, dated references
 
 ---
 
 ## 8. Change History
 
-- `[Current]`: Phase 12 SIMULATOR VALIDATION - Floor Formula Verification. `Problem`: Documentation claimed theoretical floor limits ($P=k/(R+S)^2$ and $1/(1+s/a)^2$ ratio) but no automated tests verified these specific mathematical properties. `Solution`: Implemented `Floor Formula & Scenario Verification` (Test 41) in simulator. Validated spot price matches theoretical floor after full user dump. Validated Floor/Ceiling ratio aligns with derived approximation ($44.4\%$ for $a=66.7\%$). `Integration`: Added test to `simulator/tests.js` and updated mirror `simulator/tests.md`. `Status`: 56/56 tests passing. Theory matches Simulation.
-- `[Previous]`: Phase 11 EQUILIBRIUM ANALYSIS - Dimensional Correction. `Problem`: $P_{eq}$ formula was dimensionally incorrect (resulting in $\sqrt{Price}$) and lacked clear definition. `Solution`: Corrected to $P_{eq} \approx \sqrt{R_{foreign} \cdot m}$ (yielding correct Price units) and defined it as the "Backing Equilibrium" where Market Cap = Reserves. `Integration`: Updated `tmctol.en.md` and `tmctol.ru.md`. `Status`: Dimensions valid, definitions rigorous.
-- `[Legacy-1]`: Phase 10 BURN MECHANICS - Ratchet Formalization. `Problem`: "Ratchet Effect" documentation relied on vague heuristics and confusing notation (`ΔS/(R-ΔS)²`) rather than physical derivation. `Solution`: Formalized the burn mechanic: Supply Contraction ($S \downarrow$) $\rightarrow$ Max Potential Pool Balance Contraction ($R+S \downarrow$) $\rightarrow$ Floor Elevation ($P = k/(R+S)^2 \uparrow$). Explicitly defined "Bidirectional Compression" (Ceiling drops via curve, Floor rises via burn). `Integration`: Updated `tmctol.en.md` and `tmctol.ru.md`. `Status`: Mathematical causality established.
+- `[Current]`: AAA Phase 7+8+9 закрыты по спецификации без backward-compat/migration слоя (проект в pre-release) + закрыт Phase 10 (Validation/Hardening). `SplitTransfer` переведён на рациональную модель (`SplitLeg { to, share }`, `total_shares`, `remainder_to`) с жёсткой валидацией `sum(share_i) == total_shares`; remainder маршрутизируется в `remainder_to` либо fallback leg[0], а fee upper-bound держит worst-case запас (`legs+1`). Для `OnAddressEvent` добавлен `InboxDrainMode::{Single,Batch,Drain}`: `Batch(max)` валидируется (`0 < max <= MaxAddressEventInboxCount`), `Batch/Drain` трактуют saturation как consume-all+reset, `Single` consume-one с сохранением saturation flag. В zombie sweep добавлены lifecycle проверки `WindowExpired` и `MinUserBalance` для parity с permissionless liveness path при сохранении bounded cursor semantics (`MaxSweepPerBlock`); отдельно подтверждён rent ceiling (`MaxRentAccrual`) юнит-тестом на large block delta. По Phase 10 дополнительно закрыты инварианты `No mid-block retries`, `Stateless steps`, `Saturating arithmetic`, `Budget cap`, `All cycles/queues bounded`: добавлены runtime property-style budget tests по множеству `remaining_weight`, unit-тесты на bounded deferred retry/queue pressure и benchmark guard `process_deferred_retry_max_retries` для worst-case deferred cursor path. Финальный audit-pass: удалён дублирующий Noop-тест, приведены секции тестов/бенчмарков к однородной структуре и добавлены комментарии для неочевидных regression guards. Полная валидация (`simulator`, `cargo check/test`, `runtime-benchmarks`, `clippy`) зелёная.
+- `[Previous]`: AAA owner-slot sovereign rollout реализован end-to-end + закрыт Phase 6.5. В pallet/runtime добавлены `owner_slot`, `OwnerSlots(owner,slot)`, `SovereignIndex(sovereign)`, `MaxOwnerSlots`, ошибки `OwnerSlotCapacityExceeded`/`SovereignAccountCollision`; create-path использует first-free scan от `slot=0`, destroy-path освобождает slot/index bindings, `AAACreated` расширен `owner_slot`. Добавлены unit+integration тесты на детерминированную раздачу слотов и reuse после destroy/recreate. Бенчмарки `create_user_aaa`/`create_system_aaa` переведены на worst-case slot scan (`slot=MaxOwnerSlots-1`), create-weights обновлены с учётом линейного DB-read cost по `MaxOwnerSlots`, runtime `pallet_aaa` weights перегенерированы через `frame-omni-bencher`. Для стабильности runtime-bench добавлен pre-seed fee sink в `permissionless_sweep` benchmark setup (иначе sub-ED rent transfer в новый fee sink мог удалять actor в setup/assert path). Выявлен и закрыт runtime-интеграционный риск: sub-ED `ExecutionFeePerStep` падал при пустом fee sink (`PipelineFailed`/`Other("")`); исправлено предсозданием/funding AAA fee sink в test env и chain spec genesis.
+- `[Legacy-0]`: AAA spec+impl sync: отказ от `TTL + DeadAaaOwners` в stable-контракте реализован end-to-end. После terminal-refund orphan-активы вне `refund_assets` остаются на бывшем sovereign-адресе и выходят из-под protocol control; recovery-registry/extrinsic удалены из pallet/runtime/tests/weights/benchmarks. Сохранены: строгая `WeightToFee(weight_upper_bound)` fee-модель, `ScheduleWindow` REQUIRED, pre-flight `cycle_fee_upper` + fee reserve, breaker stop enqueue+execution, weighted fairness, bounded O(K) adapter contract с `MaxK`, нормализованный `SplitTransfer` (`share_i + total_shares`, `remainder_to`). Валидация: simulator + workspace check/test/bench/clippy зелёные.
+- `[Legacy-1]`: AAA hardening + runtime adapter safety. Добавлено: строгая валидация `SplitTransfer` (`InsufficientSplitLegs`, `ZeroShareLeg`, `DuplicateRecipient`) на create+execute, runtime guard для `Mint` (только `System`), fail-fast для переполнения `refund_assets` (`RefundAssetsOverflow`), отдельные веса/бенчмарки для `permissionless_sweep` и `recover_dead_aaa_funds`. Исправлено: преждевременное удаление `DeadAaaOwners` после частичного recovery (блокировало последующие claim). Runtime `aaa_config`: O(1) lookup LP-баланса + bounded scan (`AaaMaxPoolScan`) для LP→pair резолва вместо unbounded iter. Runtime AAA integration suite: 31→26 (базовые lifecycle/access-control кейсы оставлены в unit). 85 pallet tests, 155 runtime integration tests, 0 warnings.
+- `[Legacy-2]`: AAA v0.40.0 full spec alignment complete. Удалены: `LifecycleState`, `AaaMode`, `PauseActor`, `DormantQueue`, `SystemExecutionPaused`, `AdmissionFee`, `actor_account_id`. Добавлены: `is_paused: bool`, `DeadAaaOwners`, `StepBaseFee`/`ConditionReadFee`/`MaxRentAccrual`, `Noop` task, `permissionless_sweep`, `recover_dead_aaa_funds`, `AAADestroyed` event, `CycleNonceExhausted` (pause System / destroy User). Инсайт: ring double-firing prevented by deferring re-enqueue to post-loop. Суверенный аккаунт: XOR-derivation prevents AccountId collision for small AccountId types. 79 pallet tests, 160 integration tests, 382 workspace tests, 0 warnings.

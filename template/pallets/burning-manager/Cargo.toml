@@ -1,0 +1,47 @@
+[package]
+name = "pallet-burning-manager"
+version = "0.1.0"
+description = "Token-driven fee processing pallet for TMCTOL framework"
+authors.workspace = true
+license = "MIT-0"
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { workspace = true }
+scale-info = { workspace = true }
+frame = { workspace = true }
+polkadot-sdk = { workspace = true, features = [
+  "frame-support",
+  "frame-system",
+  "pallet-asset-conversion",
+  "pallet-balances",
+  "pallet-assets",
+  "sp-runtime",
+  "sp-io",
+] }
+# Local dependencies
+pallet-axial-router = { path = "../axial-router", default-features = false }
+primitives = { path = "../../primitives", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "polkadot-sdk/std",
+  "scale-info/std",
+  "pallet-axial-router/std",
+  "primitives/std",
+]
+runtime-benchmarks = [
+  "polkadot-sdk/runtime-benchmarks",
+]
+try-runtime = ["polkadot-sdk/try-runtime"]

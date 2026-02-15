@@ -4,9 +4,21 @@
  * @name `TMCTOL` Simulator
  * @note This simulator serves for preliminary economic testing, parameter optimization, and business logic formalization of composite tokenomics models.
  * @units Balances, prices and slope use `PRECISION` (10^12) for accuracy. Fractional values (fees, shares) use `PPM` (Parts Per Million, 10^6) and require a '_ppm' suffix.
- * @version 1.1.0
+ * @version 1.2.0
  * @module model.js
  */
+
+// --- Types ---
+
+/** @typedef {import('./types').TolBucketConfig} TolBucketConfig */
+/** @typedef {import('./types').TolConfig} TolConfig */
+/** @typedef {import('./types').MintShareConfig} MintShareConfig */
+/** @typedef {import('./types').TmcConfig} TmcConfig */
+/** @typedef {import('./types').XykConfig} XykConfig */
+/** @typedef {import('./types').RouterConfig} RouterConfig */
+/** @typedef {import('./types').SystemConfig} SystemConfig */
+
+// --- Helpers ---
 
 /**
  * @template T
@@ -25,13 +37,7 @@ function isOk(result) {
   return result.ok === true;
 }
 
-/** @typedef {Record<string, bigint>} TolBucketConfig */
-/** @typedef {{ bucket_shares: TolBucketConfig }} TolConfig */
-/** @typedef {{ user_ppm: bigint, tol_ppm: bigint }} MintShareConfig */
-/** @typedef {{ price_initial: bigint, slope: bigint, mint_shares: MintShareConfig }} TmcConfig */
-/** @typedef {{ fee_xyk_ppm: bigint }} XykConfig */
-/** @typedef {{ fee_router_ppm: bigint, min_swap_foreign: bigint, min_initial_foreign: bigint }} RouterConfig */
-/** @typedef {{ router: RouterConfig, xyk: XykConfig, tmc: TmcConfig, tol: TolConfig }} SystemConfig */
+// --- Constants ---
 
 export const DECIMALS = 12n;
 export const PRECISION = 10n ** DECIMALS;
@@ -63,6 +69,8 @@ export const DEFAULT_CONFIG = /** @type {SystemConfig} */ ({
     },
   },
 });
+
+// --- Math Primitives ---
 
 export class BigMath {
   static mul_div(
@@ -111,6 +119,8 @@ export class BigMath {
     return a < 0n ? -a : a;
   }
 }
+
+// --- Actors ---
 
 export class User {
   constructor(
@@ -200,6 +210,8 @@ export class LiquidityBucket {
     this.contributed_foreign += foreign_used;
   }
 }
+
+// --- Economic Primitives ---
 
 export class Tol {
   constructor(/** @type {Xyk} */ xyk, /** @type {TolConfig} */ config) {
@@ -789,6 +801,8 @@ export class Tmc {
   }
 }
 
+// --- Coordination ---
+
 export class FeeManager {
   constructor(
     /** @type {Xyk} */ xyk,
@@ -1093,6 +1107,8 @@ export class Router {
     }
   }
 }
+
+// --- Factory ---
 
 export function create_system(
   /** @type {Partial<SystemConfig>} */ config_override = {},

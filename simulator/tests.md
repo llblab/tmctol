@@ -1,8 +1,5 @@
 # TMCTOL Tests Mirror
 
-- `Version:` 1.1.0 (February 2026)
-- `Architecture:` TOL Multi-Bucket (2-way distribution: User 33.3% + TOL 66.6%)
-
 Comprehensive test suite detalization synchronized with `/simulator/tests.js`
 
 ---
@@ -474,7 +471,7 @@ Validation of adaptive system behaviors, intelligent routing decisions, and econ
 ## Test Execution
 
 ```bash
-deno ./simulator/tests.js
+node ./simulator/tests.js
 ```
 
 - Expected Output: Minimal statistics, error codes only for failures

@@ -103,7 +103,7 @@ const TEST_SECTIONS = [
   [8, 3], // System Properties & Invariants
   [9, 2], // Multi-User & Chaos Testing
   [10, 5], // Emergent Properties & System Intelligence
-  [11, 3], // Economic Security & Attack Resistance
+  [11, 4], // Economic Security & Attack Resistance
   [12, 4], // Adaptive System Behaviors
 ];
 

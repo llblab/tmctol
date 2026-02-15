@@ -4,7 +4,7 @@
  * @name `TMCTOL` Simulator
  * @note This simulator serves for preliminary economic testing, parameter optimization, and business logic formalization of composite tokenomics models.
  * @units Balances, prices and slope use `PRECISION` (10^12) for accuracy. Fractional values (fees, shares) use `PPM` (Parts Per Million, 10^6) and require a '_ppm' suffix.
- * @version 1.0.0
+ * @version 1.1.0
  * @module model.js
  */
 
@@ -29,7 +29,6 @@ function isOk(result) {
 /** @typedef {{ bucket_shares: TolBucketConfig }} TolConfig */
 /** @typedef {{ user_ppm: bigint, tol_ppm: bigint }} MintShareConfig */
 /** @typedef {{ price_initial: bigint, slope: bigint, mint_shares: MintShareConfig }} TmcConfig */
-/** @typedef {{ min_swap_foreign: bigint }} FeeConfig */
 /** @typedef {{ fee_xyk_ppm: bigint }} XykConfig */
 /** @typedef {{ fee_router_ppm: bigint, min_swap_foreign: bigint, min_initial_foreign: bigint }} RouterConfig */
 /** @typedef {{ router: RouterConfig, xyk: XykConfig, tmc: TmcConfig, tol: TolConfig }} SystemConfig */
@@ -49,7 +48,7 @@ export const DEFAULT_CONFIG = /** @type {SystemConfig} */ ({
   },
   tmc: {
     price_initial: PRECISION / 1_000n,
-    slope: PRECISION / 1_000n,
+    slope: PRECISION / 1_000_000n,
     mint_shares: {
       user_ppm: 333_333n,
       tol_ppm: 666_667n,
@@ -794,7 +793,7 @@ export class FeeManager {
   constructor(
     /** @type {Xyk} */ xyk,
     /** @type {Tmc} */ tmc,
-    /** @type {FeeConfig} */ config,
+    /** @type {RouterConfig} */ config,
   ) {
     this.xyk = xyk;
     this.tmc = tmc;

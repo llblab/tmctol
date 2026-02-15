@@ -1,6 +1,6 @@
 # TMCTOL Tests Mirror
 
-- `Version:` 1.0.0 (November 2025)
+- `Version:` 1.1.0 (February 2026)
 - `Architecture:` TOL Multi-Bucket (2-way distribution: User 33.3% + TOL 66.6%)
 
 Comprehensive test suite detalization synchronized with `/simulator/tests.js`
@@ -9,7 +9,7 @@ Comprehensive test suite detalization synchronized with `/simulator/tests.js`
 
 ## Test Structure Overview
 
-- Total Tests: 55
+- Total Tests: 56
 - Purpose: Formal verification of TMCTOL mathematical guarantees, component behavior, and emergent properties
 - Methodology: Mathematical Foundations → Core Components → Integration Flows → System Properties → Economic Security
 - Architecture Symmetry: Tests mirror TMCTOL system architecture for progressive comprehension
@@ -479,7 +479,7 @@ deno ./simulator/tests.js
 
 - Expected Output: Minimal statistics, error codes only for failures
 - Tolerance: ~0.01% for emergent behaviors (multi-step calculations)
-- Coverage: 55 tests validating 12 system layers across 2312 lines
+- Coverage: 56 tests validating 12 system layers across 1973 lines
 - Documentation Standard: Each test includes Nature/Necessity/Validates/Failure Criteria
 
 ---
@@ -502,7 +502,7 @@ deno ./simulator/tests.js
 - Integration Flows: 5 tests for multi-component workflows
 - System Invariants: 3 tests for conservation laws
 - Advanced Scenarios: 6 tests for complex behaviors
-- System Properties: 2 tests for mathematical guarantees
+- System Properties: 3 tests for mathematical guarantees
 - Multi-User Testing: 2 tests for chaos and concurrency
 - Emergent Properties: 5 tests for system behavior analysis
 - Economic Security: 4 tests for attack resistance and capital efficiency (continuous deployment vs idle vaults)
@@ -517,15 +517,15 @@ deno ./simulator/tests.js
 
 * `1.1-1.4`: Mathematical Foundations (Core Formulas)
 * `2.1-2.6`: System Parameters & Boundaries
-* `3.1-3.5`: Scaling Rules & Precision
-* `4.1-4.6`: Core Component Tests (TMC, XYK, Router, TOL)
+* `3.1-3.6`: Scaling Rules & Precision
+* `4.1-4.8`: Core Component Tests (TMC, XYK, Router, TOL)
 * `5.1-5.5`: Integration & System Flows
 * `6.1-6.3`: System Invariants & Multi-Actor
 * `7.1-7.6`: Advanced Integration Scenarios
-* `8.1-8.2`: System Properties & Invariants
+* `8.1-8.3`: System Properties & Invariants
 * `9.1-9.2`: Multi-User & Chaos Testing
 * `10.1-10.5`: Emergent Properties & System Intelligence
-* `11.1-11.3`: Economic Security & Attack Resistance
+* `11.1-11.4`: Economic Security & Attack Resistance
 * `12.1-12.4`: Adaptive System Behaviors
 
 - Use these codes in error messages for quick reference to this documentation.

@@ -11,6 +11,33 @@ TMCTOL (Token Minting Curve + Treasury-Owned Liquidity) is a tokenomic framework
 - Supply compression through fee burning (0.5% router fee)
 - Multi-bucket TOL architecture enabling governance flexibility
 
+`2×2 Positioning Matrix (abbreviations only)`:
+
+| Curve ↓ / Liquidity → | `POL`    | `TOL`    |
+| :-------------------- | :------- | :------- |
+| `TBC`                 | `TBCPOL` | `TBCTOL` |
+| `TMC`                 | `TMCPOL` | `TMCTOL` |
+
+`Glossary of Base Elements`:
+
+- `TBC`: Bidirectional mint/redeem curve model, typically symmetric in formula-space (reserve-extraction path exists)
+- `TMC`: Unidirectional mint-only curve model, inherently asymmetric in market structure (reserve-extraction path does not exist)
+- `POL`: Protocol-Owned Liquidity — ownership class where LP inventory is held by protocol accounts; permanence depends on policy (hard-locked or governance-withdrawable)
+- `TOL`: Treasury-Owned Liquidity — treasury policy framework over protocol-owned liquidity with explicit bucket roles; in TMCTOL, Bucket_A is the anchor permanence layer while B/C/D are policy-flex buckets
+
+`Combination Profiles (feasibility and properties)`:
+
+| Combination | Core properties                                                                                                                                                           |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TBC + POL` | Possible only if protocol has an explicit accumulation source (fees/spread/surplus/seed); otherwise redeem flow tends to consume reserves and POL cannot grow sustainably |
+| `TBC + TOL` | Adds treasury discipline/segmentation, but still requires dedicated LP inflow into treasury logic; redeem path continues to create extraction pressure                    |
+| `TMC + POL` | Naturally supports reserve accumulation when mint-side allocations are routed into protocol LP; floor quality then depends on treasury policy strictness                  |
+| `TMC + TOL` | Unidirectional minting plus explicit treasury floor policy (Anchor/Building/Capital/Dormant), maximizing floor hardness and governance clarity                            |
+
+`Relationship note`: TOL is a structured policy layer over POL. All TOL LP is POL by ownership, but not every POL design is TOL.
+
+`Interpretation`: TMCTOL intentionally occupies the `TMC + TOL` quadrant to combine mint-side irreversibility with policy-explicit liquidity stewardship.
+
 ---
 
 ## 1. Framework Foundation
@@ -85,7 +112,7 @@ where:
   ΔS = tokens to mint
 ```
 
-`Property`: Deterministic pricing eliminates front-running opportunities. Each mint amount has exactly one price; no price manipulation possible through transaction ordering.
+`Property`: Deterministic pricing provides a single quote for a given supply state and reduces pricing ambiguity.
 
 ### 2.3 Token Distribution
 
@@ -106,12 +133,12 @@ Distribution occurs atomically within minting transaction; no tokens exist outsi
 
 `Bucket Structure (66.6% total allocation)`:
 
-- `Bucket_A (33.3% total supply)`: Base liquidity — primary floor protection mechanism. The floor protection is guaranteed by maintaining 33.3% of circulating supply in liquidity. If Bucket_A's share exceeds this threshold (due to token burning reducing total supply or strategic accumulation), excess liquidity can be migrated to other DEX ecosystems to stimulate arbitrage and ecosystem expansion
-- `Bucket_B (11.1% total supply)`: Development buyback — strategic token acquisition. Token burning increases this bucket's relative share of circulating supply
-- `Bucket_C (11.1% total supply)`: Operations capital — liquid deployment for needs to obtain Native/Foreign. Token burning increases this bucket's relative share of circulating supply
-- `Bucket_D (11.1% total supply)`: Strategic reserve — discretionary governance allocation. Token burning increases this bucket's relative share of circulating supply
+- `Bucket_A (33.3% total supply)`: Anchor liquidity — primary floor protection mechanism. The floor guarantee is maintained by preserving 33.3% of circulating supply in liquidity. If Bucket_A exceeds this threshold (due to supply compression or strategic accumulation), excess liquidity can be migrated to external DEX ecosystems for expansion.
+- `Bucket_B (11.1% total supply)`: Building budget — ecosystem construction spending (engineering, infrastructure, tooling, integrations).
+- `Bucket_C (11.1% total supply)`: Capital bucket — operational liquidity reserve for controlled redeployment between LP positions and treasury balances.
+- `Bucket_D (11.1% total supply)`: Dormant LP reserve — governance-controlled liquidity parked until strategic activation.
 
-`Allocation vs. Circulating Share`: Initial bucket allocations represent fixed percentages of total supply at minting. However, circulating shares (percentage of current supply held by each bucket) evolve dynamically through token burning, buybacks, and strategic reallocations. This distinction enables the system to maintain floor protection guarantees while allowing strategic liquidity expansion.
+`Allocation vs. Circulating Share`: Initial bucket allocations represent fixed percentages of total supply at minting. However, circulating shares (percentage of current supply held by each bucket) evolve dynamically through token burning and strategic reallocations. This distinction enables the system to maintain floor protection guarantees while allowing treasury expansion.
 
 `Capital Efficiency`: Four independent XYK pools achieve ~100% capital utilization through continuous deployment cycles (with temporary buffers recycled into subsequent mints) versus 0% for traditional treasuries holding idle unbacked tokens. Each bucket maintains separate LP positions enabling granular governance control.
 
@@ -162,7 +189,7 @@ Distribution occurs atomically within minting transaction; no tokens exist outsi
 
 `Execution Phase`:
 
-- Swaps foreign fees for native tokens via XYK
+- Swaps fees for native tokens through the router (best-route execution across available mechanisms, typically XYK)
 - Burns native tokens (removes from total supply)
 - Updates total_burned metric for transparency
 
@@ -229,15 +256,15 @@ where s = S_sold/S_total and a = floor support fraction (e.g. a ≈ 1/3 for Buck
 
 `Scenario Analysis` (assuming `a = 33.3%` Base Support):
 
-| Scenario      | Sellable Source                | Sold Fraction ($s$) | Floor/Ceiling Ratio | Volatility |
-| :------------ | :----------------------------- | :------------------ | :------------------ | :--------- |
-| `User Exit`   | Public Allocation (33%) sold   | $0.333$             | `25%`               | $4\times$  |
-| `System Exit` | Public + Treasury (B/C/D) sold | $0.667$             | `11%`               | $9\times$  |
+| Scenario    | Sellable Source                | Sold Fraction (`s`) | Floor/Ceiling Ratio | Volatility |
+| :---------- | :----------------------------- | :------------------ | :------------------ | :--------- |
+| User Exit   | Public Allocation (33%) sold   | 0.333               | 25%                 | 4×         |
+| System Exit | Public + Treasury (B/C/D) sold | 0.667               | 11%                 | 9×         |
 
 `Key Dependency`:
 
-- `User Exit`: Represents total selling of initial public supply. With Bucket_A supporting ($a=33\%$), the floor holds at 25%.
-- `System Exit`: Represents a catastrophic scenario where Treasury buckets (B, C, D) enter circulation and are also sold. Even then, Bucket_A guarantees an 11% hard floor.
+- `User Exit`: Represents total selling of initial public supply. With Bucket_A supporting (`a=33%`), the floor holds at 25%.
+- `System Exit`: Represents a catastrophic scenario where Treasury buckets (B, C, D) enter circulation and are also sold. Under maintained protocol assumptions, Bucket_A implies an approximately 11% modeled floor ratio in this stress case.
 
 ### 3.3 Ratchet Effect Analysis
 
@@ -251,13 +278,17 @@ where s = S_sold/S_total and a = floor support fraction (e.g. a ≈ 1/3 for Buck
 
 `System Interaction`:
 
-When burning reduces circulating supply ($S_{circ}$) by $\Delta S$:
+When burning reduces circulating supply (`S_circ`) by `ΔS`:
 
-1.  `Supply Contraction`: $S'_{circ} = S_{circ} - \Delta S$
+1.  `Supply Contraction`: `S'_circ = S_circ - ΔS`
 2.  `Floor Elevation`: The maximum potential pool balance decreases, raising the floor.
-    $$P'_{floor} = \frac{k}{(R_{native} + S'_{circ})^2} > \frac{k}{(R_{native} + S_{circ})^2}$$
+    ```
+    P'_floor = k / (R_native + S'_circ)² > k / (R_native + S_circ)²
+    ```
 3.  `Ceiling Depression`: The minting price lowers as supply retracts.
-    $$P'_{ceiling} = P(S'_{circ}) < P(S_{circ})$$
+    ```
+    P'_ceiling = P(S'_circ) < P(S_circ)
+    ```
 4.  `Result`: The price corridor compresses from both sides (Bidirectional Compression).
 
 `Floor Elevation Velocity`:
@@ -328,17 +359,22 @@ Net effect: spread compression with floor-ceiling convergence
 
 `Backing Equilibrium`:
 
-The price point where the Market Cap implied by the Curve ($P \cdot S$) is fully backed by the Foreign Reserve ($R_{foreign}$).
+The price point where the Market Cap implied by the Curve (`P·S`) is fully backed by the Foreign Reserve (`R_foreign`).
 
-$$P_{eq} \approx \sqrt{R_{foreign} \cdot m_{slope}}$$
+```
+P_eq ≈ √(R_foreign · m_slope)
+```
 
 `Dimensional Validation`:
-$$\sqrt{[Foreign] \cdot \left[\frac{Foreign}{Native^2}\right]} = \sqrt{\left[\frac{Foreign^2}{Native^2}\right]} = \left[\frac{Foreign}{Native}\right] = [Price]$$
+
+```
+√([Foreign] · [Foreign/Native²]) = √([Foreign²/Native²]) = [Foreign/Native] = [Price]
+```
 
 `Significance`:
 
 - `Gravity Well`: Price oscillates around this value as volatility stabilizes.
-- `Router Behavior`: Below $P_{eq}$, supply is "oversold" (heavy floor support). Above $P_{eq}$, supply is "premium" (utility driven).
+- `Router Behavior`: Below `P_eq`, supply is "oversold" (heavy floor support). Above `P_eq`, supply is "premium" (utility driven).
 
 `Numerical Example`:
 
@@ -379,7 +415,7 @@ where burn_rate = f_router × V_trade
 
 `Flexibility`: Bucket independence enables:
 
-- `Bucket_A`: Permanent floor support (no withdrawal)
+- `Bucket_A`: Dedicated baseline floor support target; governance policy should treat it as protected capital and minimize withdrawal paths
 - `Buckets 2-4`: Strategic deployment per governance decisions
 - Effective floor ranges 11% minimum (only Bucket_A) to 25% maximum (all buckets) based on deployment choices
 
@@ -696,7 +732,7 @@ System exhibits predicted dynamics (floor elevation, range compression) only whe
 
 ---
 
-- `Version`: 1.0.0
-- `Date`: November 2025
-- `Authors`: LLB Lab
+- `Version`: 1.1.0
+- `Date`: February 2026
+- `Author`: LLB Lab
 - `License`: MIT

@@ -1,6 +1,21 @@
 # `L2 TOL` Specification
 
-This specification defines `L2 TOL` systems that issue custom L2 tokens (L2TOLT - L2 TOL Tokens) while establishing L2 Treasury-Owned Liquidity paired with the L1 Native token. L2 TOLs may use various emission mechanisms including TMC (Token Minting Curve) or custom minting strategies. Core innovations include declining voting power, progressive participation rewards, and per-block micro-streaming for MEV elimination.
+This specification defines `L2 TOL` systems that issue custom L2 tokens (L2TOLT - L2 TOL Tokens) while establishing L2 Treasury-Owned Liquidity paired with the L1 Native token. L2 TOLs may use various emission mechanisms including TMC (Token Minting Curve) or custom minting strategies.
+
+`Layer map`:
+
+| Layer                 | Core actors                                                 | Governance signal                                                                 |
+| :-------------------- | :---------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| `L1 (Native)`         | TMC engine, L1 TOL buckets A/B/C/D, L1 treasury             | L1 treasury can hold L2TOLT and vote with constant `10x`                          |
+| `Bridge`              | L1 ↔ L2 token and governance connectivity                   | L1 can participate in critical L2 resolution paths                                |
+| `L2 (Child TOL DAOs)` | BLDR and custom L2 TOL instances with configurable emission | Direct holders use declining power (`10x → 1x`) plus GovXP multiplier (`1x → 5x`) |
+
+`Key Properties`:
+
+- L1 Treasury holdings in any L2 TOL receive `constant 10x voting power` (no decay)
+- Direct L2TOLT holders experience `declining power` (10x → 1x over voting period)
+- `GovXP` (Governance Experience Points) adds 1x-5x multiplier based on proven competence
+- `DripVault` per-block streaming reduces MEV extractability and introduces a temporal execution buffer for treasury operations
 
 ---
 
@@ -10,7 +25,7 @@ This specification defines `L2 TOL` systems that issue custom L2 tokens (L2TOLT 
 2. [System Invariants](#2-system-invariants)
 3. [Governance Mechanics](#3-governance-mechanics)
 4. [Treasury Integration](#4-treasury-integration)
-5. [L2 TOL Lifecycle](#5-l2-toldao-lifecycle)
+5. [L2 TOL Lifecycle](#5-l2-tol-lifecycle)
 6. [BLDR Pattern](#6-bldr-pattern)
 7. [Security Model](#7-security-model)
 8. [Configuration Parameters](#8-configuration-parameters)
@@ -35,7 +50,7 @@ This specification defines `L2 TOL` systems that issue custom L2 tokens (L2TOLT 
 - `TMC` — Token Minting Curve, one possible emission mechanism for L2TOLT
 - `L2 TMCTOL DAO` — A special case of L2 TOL that combines token minting curve and protocol-owned liquidity
 - `Custom Emission` — Alternative minting mechanisms configured per L2 TOL requirements
-- `DripVault` — Per-block streaming contract for continuous treasury operations
+- `DripVault` — Per-block streaming system for continuous treasury operations (future multi-instance model)
 - `Declining Power` — Voting weight decreasing from 10x to 1x over the voting period (except L1 TOL: constant 10x)
 - `Progressive Rewards` — Redistribution creating 1:5 ratio between passive and active participants
 - `Team Shares` — Locked allocations with governance rights but no transfer ability
@@ -45,7 +60,7 @@ This specification defines `L2 TOL` systems that issue custom L2 tokens (L2TOLT 
 
 ## 2. System Invariants
 
-Every certified L2 TOL MUST enforce these on-chain invariants:
+In this specification profile, certified L2 TOLs are expected to enforce these on-chain invariants:
 
 ### 2.1 L2 TOL Management
 
@@ -68,9 +83,7 @@ LP tokens marked as L2 TOL can be managed in two modes:
 
 Initial L2 TOL must satisfy minimum requirements configured via L1 TOLDAO pallet parameters (set through L1 referendum):
 
-```
-L2_TOL_native ≥ configured_minimum_native
-```
+- `L2_TOL_native ≥ configured_minimum_native`
 
 This ensures XYK mathematics remain valid and prevents dust attacks.
 
@@ -115,23 +128,11 @@ Real-time on-chain emission of:
 - Framework supports extensive configurability with 0-100% team shares and fully parameterized vesting durations
 - Evolution by Design: continuous improvement is a core principle
 
-### 2.7 Treasury TOL LP Management
+### 2.7 Protocol LP Management
 
-TOL LP tokens from TMCTOL minting are held in Treasury for governance-controlled strategic deployment. This pattern applies to both Native TOLDAO (L1) and L2 TOLs with different governance scopes:
+TOL LP tokens from TMCTOL minting are held under protocol-controlled accounts for governance-directed strategic deployment. This pattern applies to both Native TOLDAO (L1) and L2 TOLs with different governance scopes.
 
-```rust
-struct TreasuryLpManager {
-    tol_lp_balance: Balance,
-    total_lp_accumulated: Balance,
-}
-
-impl TreasuryLpManager {
-    fn store_tol_lp(lp_tokens: Balance) {
-        Treasury::receive_lp_tokens(lp_tokens);
-        Self::increment_accumulated(lp_tokens);
-    }
-}
-```
+Implementation note: execution wiring can differ by layer. The simulator may model direct logical transitions, while the template runtime uses hook-driven proactive pallet actors and account-based flows. The economic invariant is the same: LP remains under protocol control and moves only through governance-defined mechanisms.
 
 `Strategic Capabilities (Both L1 and L2)`:
 
@@ -153,16 +154,16 @@ impl TreasuryLpManager {
 `Governance Process`:
 
 - LP deployment requires governance referendum (voting period varies by level)
-- No admin keys or unilateral control at any level
+- Target deployment model: no unilateral operator control. Bootstrap phases may use temporary super-user authority with explicit sunset governance
 - Total TOL LP tracked on-chain for transparency across all deployments
-- Floor guarantee maintained regardless of LP location or governance level
+- Modeled floor behavior depends on liquidity depth, routing quality, and governance constraints across deployment locations
 - Cross-level coordination: L2 TOL strategic decisions may trigger L1 review if significant
 
 `Critical Invariants (Universal)`:
 
-- Treasury ownership = permanent protocol ownership (no individual withdrawal at any level)
+- Treasury ownership is intended as protocol ownership under governed accounts; withdrawal or relocation rights depend on configured governance rules
 - All strategic deployment decisions require governance approval (L1 or L2 as appropriate)
-- Floor calculation remains valid across all deployment configurations and governance levels
+- Floor model remains analyzable across deployment configurations, while realized market floor depends on executable liquidity conditions
 - LP tokens never leave protocol control, only change location within protocol-controlled accounts
 - Transparency requirement: all LP movements tracked on-chain regardless of originating governance level
 
@@ -172,32 +173,15 @@ impl TreasuryLpManager {
 
 ### 3.1 Declining Voting Power
 
-Voting weight decays linearly from 10x to 1x over different periods, incentivizing early participation:
+Voting weight decays linearly from 10x to 1x over different periods, incentivizing early participation.
 
-```rust
-fn calculate_voting_power(
-    voter: AccountId,
-    vote_time: Timestamp,
-    vote_start: Timestamp,
-    vote_end: Timestamp,
-    base_weight: Balance,
-    l1_tol_l2tolt_balance: Balance
-) -> Balance {
-    // L1 TOL holdings maintain constant 10x throughout voting period
-    if voter == L1_TOL_ACCOUNT {
-        return l1_tol_l2tolt_balance * 10;
-    }
+`Conceptual voting power model`:
 
-    // Regular holders experience declining power
-    let progress = (vote_time - vote_start) / (vote_end - vote_start);
-    let multiplier = 10.0 - (9.0 * progress);
-
-    // Apply GovXP multiplier for competent participants
-    let govxp_multiplier = calculate_govxp_multiplier(voter);
-
-    base_weight * multiplier * govxp_multiplier
-}
-```
+- If voter is `L1 TOL` account: `power = l1_tol_l2tolt_balance × 10 × GovXP_multiplier`
+- If voter is direct holder:
+  - `progress = (vote_time - vote_start) / (vote_end - vote_start)`
+  - `temporal_multiplier = 10 - 9 × progress`
+  - `power = base_weight × temporal_multiplier × GovXP_multiplier`
 
 `Properties`:
 
@@ -225,18 +209,9 @@ GovXP is a non-transferable (soulbound) numerical attribute tied to wallet addre
 
 `GovXP Multiplier Formula (Wisdom Curve)`:
 
-```rust
-fn calculate_govxp_multiplier(govxp: u64) -> FixedU128 {
-    let max_bonus = FixedU128::from(4.0);  // Maximum bonus 4.0 (resulting multiplier 5.0x)
-    let k = FixedU128::from(0.0005);       // Curve steepness coefficient
-
-    // Logistic curve (S-curve) for diminishing returns effect
-    let exponent = -k * FixedU128::from(govxp);
-    let sigmoid = FixedU128::from(2) / (FixedU128::from(1) + exponent.exp());
-
-    FixedU128::from(1) + (max_bonus * (sigmoid - FixedU128::from(1)))
-}
-```
+- `GovXP_multiplier = 1 + max_bonus × (sigmoid(govxp) - 1)`
+- `max_bonus = 4.0` (therefore max multiplier is `5.0x`)
+- `sigmoid` uses configurable steepness coefficient `k = 0.0005`
 
 `Curve Properties`:
 
@@ -245,34 +220,15 @@ fn calculate_govxp_multiplier(govxp: u64) -> FixedU128 {
 - Multiplier asymptotically approaches 5.0x, preventing infinite influence growth
 - Diminishing returns effect encourages continuous participation, not accumulation
 
-Active governance participants receive enhanced rewards with GovXP weighting:
+Active governance participants receive enhanced rewards with GovXP weighting.
 
-```rust
-fn distribute_rewards(epoch: EpochId) -> Result<(), Error> {
-    let base_reward = calculate_base_staking_reward();
-    let active_voters = count_active_participants(epoch);
-    let passive_stakers = total_stakers - active_voters;
+`Conceptual reward distribution model`:
 
-    // Non-participants receive 20% of base
-    let passive_reward = base_reward * 0.2;
-    let total_passive_payout = passive_reward * passive_stakers;
-
-    // Redistribution pool from penalties
-    let penalty_pool = (base_reward * passive_stakers) - total_passive_payout;
-
-    // Active voters share base + redistribution with GovXP weighting
-    let total_weighted_stake = calculate_total_weighted_stake(active_voters);
-    for active_voter in active_voters {
-        let govxp_multiplier = calculate_govxp_multiplier(govxp);
-        let weighted_stake = get_staked_balance(voter) * govxp_multiplier;
-        let voter_reward = base_reward + (penalty_pool * weighted_stake / total_weighted_stake);
-        distribute_to_voter(voter, voter_reward);
-    }
-
-    // Result: up to 5x rewards for competent participation
-    distribute(passive_stakers, passive_reward);
-}
-```
+1. Compute `base_reward` per participant
+2. Apply passive-participation baseline payout (for example, 20% of base)
+3. Route the remaining reward pool to active voters
+4. Split active pool by weighted stake (`stake × GovXP_multiplier`)
+5. Resulting reward ratio can approach `1:5` between passive and highly competent active participants
 
 ### 3.3 L1 TOL Voting Advantage
 
@@ -294,9 +250,7 @@ GovXP is automatically accrued and decayed upon resolution of system events:
 
 `Final Voting Power Formula`:
 
-```
-Final_Vote_Weight = Token_Balance × Temporal_Multiplier × GovXP_Multiplier
-```
+- `Final_Vote_Weight = Token_Balance × Temporal_Multiplier × GovXP_Multiplier`
 
 - `Token_Balance`: Amount of staked tokens (L2TOLT)
 - `Temporal_Multiplier`: Time-based multiplier (10x → 1x in Declining Power)
@@ -304,9 +258,7 @@ Final_Vote_Weight = Token_Balance × Temporal_Multiplier × GovXP_Multiplier
 
 `Fee Distribution Formula`:
 
-```
-Share_of_Fees = Total_Fees_Pool × (Staked_Balance × GovXP_Multiplier) / Global_Weighted_Stake
-```
+- `Share_of_Fees = Total_Fees_Pool × (Staked_Balance × GovXP_Multiplier) / Global_Weighted_Stake`
 
 - `Total_Fees_Pool`: Total fees to distribute per epoch
 - `Staked_Balance`: Participant's staked token amount
@@ -324,13 +276,12 @@ Share_of_Fees = Total_Fees_Pool × (Staked_Balance × GovXP_Multiplier) / Global
 
 `Voting Power Comparison`:
 
-```
-Timing: Start 25% 50% 75% End
-Direct holder: 10x 7.75x 5.5x 3.25x 1x
-L1 TOL: 10x 10x 10x 10x 10x ← No decay
-GovXP Min: 1x 1x 1x 1x 1x ← Base multiplier
-GovXP Max: 5x 5x 5x 5x 5x ← Maximum bonus (configurable via L1 governance)
-```
+| Profile       | Start | 25%   | 50%  | 75%   | End | Notes                          |
+| :------------ | :---- | :---- | :--- | :---- | :-- | :----------------------------- |
+| Direct holder | 10x   | 7.75x | 5.5x | 3.25x | 1x  | Declining power                |
+| L1 TOL        | 10x   | 10x   | 10x  | 10x   | 10x | No decay                       |
+| GovXP Min     | 1x    | 1x    | 1x   | 1x    | 1x  | Base multiplier                |
+| GovXP Max     | 5x    | 5x    | 5x   | 5x    | 5x  | Configurable via L1 governance |
 
 `Strategic Implications`:
 
@@ -407,42 +358,21 @@ Critical actions requiring L1 TOLDAO involvement:
 
 ### 4.1 Per-Block Micro-Streaming
 
-Eliminates MEV through continuous micro-transactions:
+Mitigates a class of MEV opportunities by fragmenting execution into continuous micro-transactions and adds a temporal execution dimension (buffer) for treasury actions.
 
-```rust
-struct DripVault {
-    total_allocation: Balance,
-    blocks_remaining: BlockNumber,
-    amount_per_block: Balance,
-}
+`Conceptual DripVault model`:
 
-impl DripVault {
-    fn initialize(allocation: Balance, duration_blocks: BlockNumber) -> Self {
-        Self {
-            total_allocation: allocation,
-            blocks_remaining: duration_blocks,
-            amount_per_block: allocation / duration_blocks,
-        }
-    }
+- A policy defines total allocation, duration, and execution cadence in blocks
+- Execution is fragmented into small periodic actions rather than one large transaction
+- Each action is processed under normal safety policies (permissions, slippage/oracle constraints, accounting)
+- Remaining allocation, elapsed schedule, and completion state are tracked on-chain
+- Smaller per-step notional can reduce extractable value per transaction under normal market conditions
 
-    fn execute_block(&mut self) -> Balance {
-        if self.blocks_remaining > 0 {
-            self.blocks_remaining -= 1;
-            self.amount_per_block  // Amount too small for profitable MEV
-        } else {
-            0
-        }
-    }
-}
-```
+`Illustrative scale`:
 
-`Configuration Example`:
-
-```
-2-year stream: 2 * 365 * 7200 blocks = 5,256,000 blocks
-Per-block amount: 10,000 NATIVE / 5,256,000 = 0.0019 NATIVE
-MEV profit: price_impact(0.0019) - gas_cost < 0 ✓
-```
+- 2-year stream at ~7200 blocks/day → ~5,256,000 blocks
+- 10,000 NATIVE over that horizon → ~0.0019 NATIVE average per block
+- Expected MEV edge can become less attractive as per-step value shrinks
 
 ### 4.2 Treasury Participation Modes
 
@@ -525,16 +455,16 @@ L2 TOL considered mature when:
 
 ### 6.1 Architecture
 
-BLDR serves as the canonical L2 TMCTOL DAO implementation (using TMC) for transparent payroll:
+BLDR serves as the canonical L2 TMCTOL DAO implementation (using TMC) for transparent payroll.
 
-```rust
-struct BldrConfig {
-    team_share: Permill,        // 0% for pure treasury model
-    treasury_share: Permill,    // 100% if no team
-    invoice_cooldown: BlockNumber,
-    max_invoice_size: Balance,
-}
-```
+`Conceptual BLDR configuration surface`:
+
+| Parameter          | Purpose                                                              |
+| :----------------- | :------------------------------------------------------------------- |
+| `team_share`       | Team allocation, optionally `0%` for pure treasury model             |
+| `treasury_share`   | Treasury allocation, optionally dominant when team share is low/zero |
+| `invoice_cooldown` | Minimum delay between invoice actions                                |
+| `max_invoice_size` | Hard cap per invoice to limit governance shock                       |
 
 ### 6.2 Invoice Flow
 
@@ -568,11 +498,7 @@ L1 TOL governance can configure custom vote options for L2 TOLs beyond the stand
    - If `VETO ≤ 50%` → VETO votes ignored, proceed to multiplier calculation
 
 2. Calculate weighted multiplier from evaluation votes (AMPLIFY/APPROVE/REDUCE):
-
-   ```
-   Multiplier = (AMPLIFY_votes × 2.0 + APPROVE_votes × 1.0 + REDUCE_votes × 0.5)
-                / (AMPLIFY_votes + APPROVE_votes + REDUCE_votes)
-   ```
+   - `Multiplier = (AMPLIFY_votes × 2.0 + APPROVE_votes × 1.0 + REDUCE_votes × 0.5) / (AMPLIFY_votes + APPROVE_votes + REDUCE_votes)`
 
 3. Apply multiplier contextually:
    - For payments: `final_payment = requested_amount × multiplier`
@@ -597,19 +523,15 @@ L1 TOL governance can configure custom vote options for L2 TOLs beyond the stand
 
 `Example`:
 
-```
-Invoice: 1000 USDC requested
-
-Vote distribution:
-- AMPLIFY: 35% (350 tokens) → 700 weighted
-- APPROVE: 45% (450 tokens) → 450 weighted
-- REDUCE: 15% (150 tokens) → 75 weighted
-- VETO: 5% (50 tokens) → ignored (< 50%)
-
-Multiplier = (700 + 450 + 75) / (350 + 450 + 150) = 1.29
-Final payment: 1000 × 1.29 = 1,290 USDC
-Runtime update: Voting period = 7 days × (1 / 1.29) ≈ 5.4 days (accelerated deployment)
-```
+- Invoice: `1000 USDC` requested
+- Vote distribution:
+  - `AMPLIFY`: 35% (350 tokens) → 700 weighted
+  - `APPROVE`: 45% (450 tokens) → 450 weighted
+  - `REDUCE`: 15% (150 tokens) → 75 weighted
+  - `VETO`: 5% (50 tokens) → ignored (`< 50%`)
+- Multiplier: `(700 + 450 + 75) / (350 + 450 + 150) = 1.29`
+- Final payment: `1000 × 1.29 = 1,290 USDC`
+- Runtime update timeline: `7 days × (1 / 1.29) ≈ 5.4 days` (accelerated deployment)
 
 `Key Insights`:
 
@@ -624,11 +546,16 @@ Runtime update: Voting period = 7 days × (1 / 1.29) ≈ 5.4 days (accelerated d
 
 ### 6.3 Economic Loop
 
-```
-Treasury seeds BLDR → Contributors earn → Some sell for Native →
-XYK price dips → Treasury buyback → Relock with multiplier →
-Stronger governance → Better decisions → More value → Repeat
-```
+- Treasury seeds BLDR
+- Contributors earn BLDR
+- Some participants sell for Native
+- XYK price dips
+- Treasury performs buyback
+- Relock with multiplier
+- Governance strengthens
+- Decision quality improves
+- System value compounds
+- Cycle repeats
 
 ---
 
@@ -691,14 +618,11 @@ Stronger governance → Better decisions → More value → Repeat
 
 Minimum attack cost for any L2 TOL:
 
-```
-Attack_cost = min(
-    l1_tol_l2tolt × 10,            // L1 TOL constant 10x advantage
-    circulating_l2tolt × price × 5, // Need >50% with 1x vs early 10x voters
-    native_market_cap × 0.1,        // L1 Native takeover
-    opportunity_cost(10x_lockup)    // Time-weighted capital
-)
-```
+- `Attack_cost = min(l1_tol_l2tolt × 10, circulating_l2tolt × price × 5, native_market_cap × 0.1, opportunity_cost(10x_lockup))`
+- `l1_tol_l2tolt × 10`: L1 TOL constant 10x advantage
+- `circulating_l2tolt × price × 5`: Need >50% with 1x vs early 10x voters
+- `native_market_cap × 0.1`: L1 Native takeover path
+- `opportunity_cost(10x_lockup)`: Time-weighted capital lock cost
 
 `Key insights`:
 
@@ -753,55 +677,49 @@ Attack_cost = min(
 
 #### 8.1.1 GovXP Parameters
 
-```rust
-const GOVXP_CONFIG: GovXpConfig = GovXpConfig {
-    max_bonus: FixedU128::from(4.0),      // Maximum bonus 4.0 (resulting multiplier 5.0x)
-    k_coefficient: FixedU128::from(0.0005), // Logistic curve steepness coefficient
-    oracle_success_reward: 100,           // Reward for successful prediction
-    oracle_failure_penalty: 50,           // Penalty for failed prediction
-    winning_vote_base: 10,                // Base reward for correct vote
-    proposal_success_reward: 500,         // Reward for successful proposal
-    invoice_approve_reward: 250,          // Reward for APPROVE invoice
-    invoice_amplify_reward: 1000,          // Reward for AMPLIFY invoice
-    invoice_veto_penalty: 500,            // Penalty for VETO invoice
-    delegation_multiplier: FixedU128::from_rational(1, 5), // 20% of delegate's earned
-    inactivity_decay: FixedU128::from_rational(99, 100),   // 1% decay per inactive epoch
-    inactivity_epochs: 91,                // Inactivity period for decay (91 days)
-};
-```
+`Recommended baseline values` (governance-adjustable):
 
-```rust
-const DEFAULT_CONFIG: L2TolDaoConfig = L2TolDaoConfig {
-    // Shares (fully configurable at L2 TOL creation, modifiable via governance unless set immutable)
-    l2_tol_share: Permill::from_percent(33),
-    treasury_share: Permill::from_percent(33),
-    user_share: Permill::from_percent(34),
-    team_share: Permill::from_percent(0),
+| Parameter                 | Baseline                       |
+| :------------------------ | :----------------------------- |
+| `max_bonus`               | `4.0` (max multiplier `5.0x`)  |
+| `k_coefficient`           | `0.0005`                       |
+| `oracle_success_reward`   | `+100`                         |
+| `oracle_failure_penalty`  | `-50`                          |
+| `winning_vote_base`       | `+10 × days_remaining`         |
+| `proposal_success_reward` | `+500`                         |
+| `invoice_approve_reward`  | `+250`                         |
+| `invoice_amplify_reward`  | `+1000`                        |
+| `invoice_veto_penalty`    | `-500`                         |
+| `delegation_multiplier`   | `20%` of delegate-earned GovXP |
+| `inactivity_decay`        | `1%` decay per inactive epoch  |
+| `inactivity_epochs`       | `91 days`                      |
 
-    // Governance
-    // Note: L1 TOL receives constant 10x multiplier (no decay) - not configurable
-    declining_power_start: 10,  // Direct holders start at 10x
-    declining_power_end: 1,     // Direct holders end at 1x
-    voting_period: 7 * DAYS,              // Standard voting period (configurable via multiplier)
-    native_voting_period: 14 * DAYS,      // Native token voting period
-    veto_override_threshold: 14 * DAYS,
+`Recommended L2 TOL default profile` (governance-adjustable unless immutable at launch):
 
-    // Economics
-    min_native_floor: 1000 * UNITS,
-    min_mint_amount: 100 * UNITS,
-    buyback_threshold: Permill::from_percent(95),
+| Category   | Parameter                 | Baseline     |
+| :--------- | :------------------------ | :----------- |
+| Shares     | `l2_tol_share`            | `33%`        |
+| Shares     | `treasury_share`          | `33%`        |
+| Shares     | `user_share`              | `34%`        |
+| Shares     | `team_share`              | `0%`         |
+| Governance | `declining_power_start`   | `10x`        |
+| Governance | `declining_power_end`     | `1x`         |
+| Governance | `voting_period`           | `7 days`     |
+| Governance | `native_voting_period`    | `14 days`    |
+| Governance | `veto_override_threshold` | `14 days`    |
+| Economics  | `min_native_floor`        | `1000 units` |
+| Economics  | `min_mint_amount`         | `100 units`  |
+| Economics  | `buyback_threshold`       | `95%`        |
+| Streaming  | `default_drip_duration`   | `2 years`    |
+| Streaming  | `blocks_per_drip`         | `1 block`    |
 
-    // Streaming
-    default_drip_duration: 2 * YEARS,
-    blocks_per_drip: 1,
-};
-```
+`Invariant note`: L1 TOL retains constant `10x` voting multiplier and does not decay over vote time.
 
 ### 8.2 Governance Schemas and Phased Rollout
 
 The L2 TOL framework serves as a progressive factory for creating L2 DAOs with extensive configurability. All parameters are fully configurable at creation and can be modified via governance unless explicitly set as immutable. The framework evolves progressively - basic team governance models are available at launch, with advanced features (LP-based voting, custom veto mechanics, etc.) added through protocol upgrades as the ecosystem matures.
 
-`Phase 1: Ecosystem L2 TOLs Only`
+`Phase 1: Ecosystem L2 TOLs Only`:
 
 - Launch Timeline: Initial protocol deployment
 - Authorization: L1 DAO referendum required
@@ -811,7 +729,7 @@ The L2 TOL framework serves as a progressive factory for creating L2 DAOs with e
 - Examples: BLDR (payroll), core ecosystem utilities
 - Security: Maximum (L1-vetted, L1-funded)
 
-`Phase 2: User-Created L2 TOLs`
+`Phase 2: User-Created L2 TOLs`:
 
 - Launch Timeline: After Phase 1 proven stable
 - Authorization: Permissionless (threshold-gated)
@@ -844,93 +762,32 @@ The L2 TOL framework serves as a progressive factory for creating L2 DAOs with e
 
 ## 9. Implementation Requirements
 
-### 9.1 Core Pallets
+### 9.1 Core Runtime Responsibilities
 
-```rust
-trait L2TolDaoPallet {
-    // Lifecycle - Framework serves as progressive L2 TOL factory with extensive configurability
-    fn register_dao(config: L2TolDaoConfig, origin: Origin) -> Result<DaoId, Error>;
-    fn activate_dao(dao_id: DaoId, initial_native: Balance) -> Result<(), Error>;
+A conforming implementation should provide runtime surfaces for:
 
-    // Minting (implementation varies by emission mechanism)
-    fn mint(dao_id: DaoId, amount: Balance) -> Result<Balance, Error>;
-    fn custom_emission(dao_id: DaoId, params: EmissionParams) -> Result<Balance, Error>;
+- `Lifecycle`: register DAO, activate DAO, enforce bootstrap constraints
+- `Emission`: mint path per configured emission model (TMC or custom)
+- `Governance`: vote casting, deterministic vote-power calculation, proposal resolution
+- `Liquidity`: L2 TOL reserve updates, LP accounting, and treasury/lock mode handling
 
-    // Governance
-    fn cast_vote(proposal: ProposalId, weight: Balance, conviction: u8);
-    fn calculate_voting_power(
-        voter: AccountId,
-        time: Timestamp,
-        vote_start: Timestamp,
-        vote_end: Timestamp,
-        base_weight: Balance,
-        l1_tol_l2tolt_balance: Balance
-    ) -> Balance;
-    fn resolve_proposal(proposal: ProposalId) -> ResolutionPath;
+### 9.2 Critical Hook Semantics
 
-    // L2 TOL Management
-    fn add_liquidity_to_l2_tol(dao_id: DaoId, native: Balance, l2pdt: Balance);
-    fn get_l2_tol_reserves(dao_id: DaoId) -> (Balance, Balance);
-}
-```
+A conforming runtime should preserve these hook-level semantics:
 
-### 9.2 Critical Hooks
+- `on_mint`: enforce cap/allocation invariants and accounting updates
+- `on_vote_cast`: persist vote metadata needed for deterministic resolution and GovXP logic
+- `on_proposal_executed`: apply post-resolution state transitions and timelock/veto outcomes
+- `on_participation_reward`: apply reward/penalty deltas and maintain transparent distribution records
 
-```rust
-trait Hooks {
-    fn on_mint(dao_id: DaoId, amount: Balance);
-    fn on_vote_cast(voter: AccountId, power: Balance);
-    fn on_proposal_executed(proposal: ProposalId);
-    fn on_participation_reward(voter: AccountId, reward: Balance);
-}
-```
+### 9.3 Storage Requirements (Conceptual)
 
-### 9.3 Storage
+A conforming implementation should track at minimum:
 
-#### 9.3.1 GovXP Storage
-
-```rust
-/// Main GovXP score storage
-#[pallet::storage]
-pub(super) type GovXPStorage<T: Config> = StorageMap<
-    _,
-    Blake2_128Concat,
-    T::AccountId,
-    u64,
-    ValueQuery,
->;
-
-/// GovXP delegation registry
-#[pallet::storage]
-pub(super) type DelegateRegistry<T: Config> = StorageMap<
-    _,
-    Blake2_128Concat,
-    T::AccountId,  // Delegator
-    T::AccountId,  // Delegate
-    OptionQuery,
->;
-
-/// Voting data for GovXP reward calculations
-#[pallet::storage]
-pub(super) type ProposalVoters<T: Config> = StorageDoubleMap<
-    _,
-    Blake2_128Concat,
-    DaoId,
-    Blake2_128Concat,
-    ProposalId,
-    BoundedVec<(T::AccountId, VoteData), T::MaxVotersPerProposal>,
-    ValueQuery,
->;
-
-/// GovXP parameter configuration storage
-#[pallet::storage]
-pub(super) type GovXpConfigStorage<T: Config> = StorageValue<
-    _,
-    GovXpConfig,
-    ValueQuery,
->;
-```
-
+- GovXP score per account
+- GovXP delegation links
+- Proposal voter metadata for reward and resolution logic
+- GovXP parameter configuration state
 - L2 TOL reserves and LP token tracking
 - Voting power decay schedules
 - Participation history for rewards
@@ -939,23 +796,39 @@ pub(super) type GovXpConfigStorage<T: Config> = StorageValue<
 
 ---
 
+## Hard vs Soft Guarantees
+
+### Hard Guarantees (when encoded and enforced on-chain)
+
+- `Deterministic Vote Math`: Voting weight formulas are deterministic for the selected governance schema
+- `Governance Gates`: Timelocks, supermajority rules, and veto paths are enforceable when enabled in configuration
+- `On-Chain Transparency`: Vote records, LP movements, and treasury state transitions are auditable on-chain
+- `Config-Bounded Behavior`: Parameter ranges and rule sets are bounded by runtime configuration and upgrade governance
+
+### Soft Guarantees (market and operational outcomes)
+
+- `MEV Resistance`: Micro-streaming can reduce extractability, but does not remove all MEV vectors
+- `Attack-Cost Models`: Economic deterrence depends on liquidity, participation, and adversary capital
+- `Floor Realization`: Modeled floor behavior may diverge from observed market prices under stressed liquidity conditions
+- `Governance Quality`: Long-term resilience depends on participation quality, parameter stewardship, and operational security
+
 ## Conclusion
 
-L2 TOL architecture enables second-level DAOs with mathematical security guarantees through:
+L2 TOL architecture enables second-level DAOs with formalized security assumptions and bounded mechanisms through:
 
 1. `Declining voting power` preventing last-minute governance attacks
-2. `Per-block streaming` eliminating MEV entirely
+2. `Per-block streaming` reducing MEV extractability and adding a temporal execution buffer in treasury paths
 3. `Progressive rewards` incentivizing active participation
-4. `L2 TOL immutability` ensuring permanent second-level liquidity
+4. `L2 TOL governance constraints` protecting second-level liquidity under configured rules
 5. `Dual-track governance` with execution delay for potential L1 veto intervention
 6. `Unified 10x multiplier` for L1 Treasury holdings in any L2 TOL
 7. `Evolution by Design` enabling continuous protocol improvement
 
-The system creates sustainable token economies where L2TOLT tokens carry governance power with mandatory L2 Treasury-Owned Liquidity support, while treasury participation provides alignment without traditional team allocations, maintaining security through economic incentives rather than bureaucratic structures.
+The system creates sustainable token economies where L2TOLT tokens carry governance power with mandatory L2 Treasury-Owned Liquidity support, while treasury participation provides alignment without traditional team allocations. Security outcomes are bounded by protocol rules and implementation discipline, and remain dependent on market and governance conditions.
 
 ---
 
-- `Version`: 1.0.0
-- `Date`: November 2025
+- `Version`: 1.1.0
+- `Date`: February 2026
 - `Author`: LLB Lab
 - `License`: MIT

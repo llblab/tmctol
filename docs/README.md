@@ -26,10 +26,3 @@ Second-layer DAO/governance model with declining voting power and L1 protection 
 
 - [English](./l2-tol.en.md)
 - [Russian](./l2-tol.ru.md)
-
-### Axial Router
-
-Advanced routing system with price oracle and multi-hop pathfinding.
-
-- [English](./axial-router.en.md)
-- [Russian](./axial-router.ru.md)

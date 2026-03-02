@@ -39,7 +39,7 @@ let floor_price = k / (TOL_native + tokens_sold)²;
 
 ### For Researchers
 
-- [TMCTOL Manifesto](./docs/manifesto.en.md)
+- [TMCTOL Manifesto](./docs/manifesto.en.md) - Philosophical foundation and resilience architecture
 - [Specification](./docs/tmctol.en.md) - Framework foundation and core concepts
 - [L2 TOL](./docs/l2-tol.en.md) - Second-order DAOs with autonomous liquidity
 - [Axial Router](./docs/axial-router.en.md) - Cross-LP routing mechanics

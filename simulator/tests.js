@@ -10,7 +10,7 @@
 import {
   BigMath,
   create_system,
-  PPM,
+  PPB,
   PRECISION,
   Router,
   User,
@@ -39,10 +39,10 @@ const formatTokens = (tokens) =>
   (Number(tokens) / Number(PRECISION)).toFixed(6);
 
 /**
- * @param {bigint} ppm
+ * @param {bigint} ppb
  * @returns {string}
  */
-const formatPPM = (ppm) => `${(Number(ppm) / 10000).toFixed(2)}%`;
+const formatPPB = (ppb) => `${(Number(ppb) / 10000000).toFixed(2)}%`;
 
 class TestFailure extends Error {
   constructor(/** @type {string} */ message) {
@@ -167,8 +167,8 @@ runTest("Absolute Slope Formula Verification", () => {
       price_initial: PRECISION,
       slope: PRECISION,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -208,8 +208,8 @@ runTest("Quadratic Integration for Minting", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -238,8 +238,8 @@ runTest("Linear Price Doubling Property Verification", () => {
         price_initial: PRECISION / 1_000n,
         slope: PRECISION / 1_000n,
         mint_shares: {
-          user_ppm: 333_333n,
-          tol_ppm: 666_667n,
+          user_ppb: 333_333_333n,
+          tol_ppb: 666_666_667n,
         },
       },
     });
@@ -304,8 +304,8 @@ runTest("Zero Slope (Constant Price)", () => {
       price_initial: PRECISION,
       slope: 0n,
       mint_shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     },
   });
@@ -382,8 +382,8 @@ runTest("Supply Boundary Testing", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 10_000n,
       mint_shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     },
   });
@@ -410,8 +410,8 @@ runTest("Large Number Stress Test", () => {
       price_initial: PRECISION / 1_000_000n,
       slope: PRECISION / 1_000_000n,
       mint_shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     },
   });
@@ -450,8 +450,8 @@ runTest("Parameter Combination Testing", () => {
         price_initial: combo.price_initial,
         slope: combo.slope,
         mint_shares: {
-          user_ppm: 1_000_000n,
-          tol_ppm: 0n,
+          user_ppb: 1_000_000_000n,
+          tol_ppb: 0n,
         },
       },
     });
@@ -463,8 +463,8 @@ runTest("Parameter Combination Testing", () => {
 runTest("Current Default Parameters Validation", () => {
   const system = create_system({});
   const minter = system.tmc;
-  const total_shares = minter.user_ppm + minter.tol_ppm;
-  assert(total_shares === PPM, "Default shares sum to 100%");
+  const total_shares = minter.user_ppb + minter.tol_ppb;
+  assert(total_shares === PPB, "Default shares sum to 100%");
   const result = minter.mint_native(1_000n * PRECISION);
   assert(result.total_minted > 0n, "Default config produces valid mint");
 });
@@ -474,8 +474,8 @@ runTest("Current Default Parameters Validation", () => {
 runTest("Scaling Rules - Naming Convention", () => {
   const system = create_system({});
   const minter = system.tmc;
-  assert(minter.hasOwnProperty("user_ppm"), "user share has _ppm suffix");
-  assert(minter.hasOwnProperty("tol_ppm"), "tol share has _ppm suffix");
+  assert(minter.hasOwnProperty("user_ppb"), "user share has _ppb suffix");
+  assert(minter.hasOwnProperty("tol_ppb"), "tol share has _ppb suffix");
 });
 
 runTest("Scaling Rules - Input Pre-scaling", () => {
@@ -484,8 +484,8 @@ runTest("Scaling Rules - Input Pre-scaling", () => {
       price_initial: PRECISION,
       slope: PRECISION,
       mint_shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     },
   });
@@ -501,8 +501,8 @@ runTest("Scaling Rules - Price Scaling Consistency", () => {
       price_initial: PRECISION * 2n,
       slope: 0n,
       mint_shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     },
   });
@@ -515,14 +515,14 @@ runTest("Scaling Rules - Price Scaling Consistency", () => {
   );
 });
 
-runTest("Scaling Rules - PPM Values Range", () => {
+runTest("Scaling Rules - PPB Values Range", () => {
   const system = create_system({});
-  const user_ppm = system.tmc.user_ppm;
-  const tol_ppm = system.tmc.tol_ppm;
-  const total_shares = user_ppm + tol_ppm;
-  assert(total_shares === PPM, "Shares sum to 1,000,000 PPM");
-  assert(user_ppm <= PPM, "User share <= 100%");
-  assert(tol_ppm <= PPM, "TOL share <= 100%");
+  const user_ppb = system.tmc.user_ppb;
+  const tol_ppb = system.tmc.tol_ppb;
+  const total_shares = user_ppb + tol_ppb;
+  assert(total_shares === PPB, "Shares sum to 1,000,000,000 PPB");
+  assert(user_ppb <= PPB, "User share <= 100%");
+  assert(tol_ppb <= PPB, "TOL share <= 100%");
 });
 
 runTest("Scaling Rules - Precision Through Calculations", () => {
@@ -531,8 +531,8 @@ runTest("Scaling Rules - Precision Through Calculations", () => {
       price_initial: PRECISION,
       slope: PRECISION,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -582,8 +582,8 @@ runTest("System Initialization", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -599,16 +599,16 @@ runTest("TMC Minting and Distribution", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
   const minter = system.tmc;
   const payment = 1_000n * PRECISION;
   const result = minter.mint_native(payment);
-  const user_expected = (result.total_minted * 333_333n) / PPM;
-  const tol_expected = (result.total_minted * 666_667n) / PPM;
+  const user_expected = (result.total_minted * 333_333_333n) / PPB;
+  const tol_expected = (result.total_minted * 666_666_667n) / PPB;
   assertApprox(result.user_native, user_expected, 1n, "User share correct");
   assertApprox(result.tol_native, tol_expected, 1n, "TOL share correct");
 });
@@ -657,9 +657,9 @@ runTest("XYK Multi-Swap Invariant", () => {
     assert(out.native_out > 0n, "Swap produces output");
     assert(out.fee !== undefined, "fee returned");
     assert(out.fee >= 0n, "fee non-negative");
-    // With fee_xyk_ppm = 0, fee should be 0
-    if (pool.fee_ppm === 0n) {
-      assert(out.fee === 0n, "Zero fee when fee_ppm is 0");
+    // With fee_xyk_ppb = 0, fee should be 0
+    if (pool.fee_ppb === 0n) {
+      assert(out.fee === 0n, "Zero fee when fee_ppb is 0");
     }
     const k_now = pool.reserve_native * pool.reserve_foreign;
     assert(k_now >= prev_k, "K invariant maintained or increased");
@@ -677,9 +677,9 @@ runTest("XYK Fee Tracking - Native to Foreign", () => {
   assert(output.foreign_out > 0n, "Swap produces foreign output");
   assert(output.fee !== undefined, "fee returned");
   assert(output.fee >= 0n, "fee non-negative");
-  // With fee_xyk_ppm = 0, fee should be 0
-  if (pool.fee_ppm === 0n) {
-    assert(output.fee === 0n, "Zero fee when fee_ppm is 0");
+  // With fee_xyk_ppb = 0, fee should be 0
+  if (pool.fee_ppb === 0n) {
+    assert(output.fee === 0n, "Zero fee when fee_ppb is 0");
   }
 });
 
@@ -733,8 +733,8 @@ runTest("Full Integration Flow", () => {
     price_initial: PRECISION,
     slope: PRECISION,
     shares: {
-      user_ppm: 333_333n,
-      tol_ppm: 666_667n,
+      user_ppb: 333_333_333n,
+      tol_ppb: 666_666_667n,
     },
   });
   const minter = system.tmc;
@@ -804,8 +804,8 @@ runTest("Formula Performance Analysis", () => {
       price_initial,
       slope,
       shares: {
-        user_ppm: 1_000_000n,
-        tol_ppm: 0n,
+        user_ppb: 1_000_000_000n,
+        tol_ppb: 0n,
       },
     });
     system.tmc.supply = current_supply;
@@ -840,13 +840,13 @@ runTest("Distribution Accuracy - Multi-Mint Accumulation", () => {
   const total_supply = system.tmc.supply;
   const tol_native = system.xyk.reserve_native;
   // Calculate actual distribution ratios
-  const user_ratio = (total_user_received * PPM) / total_supply;
-  const tol_ratio = (tol_native * PPM) / total_supply;
+  const user_ratio = (total_user_received * PPB) / total_supply;
+  const tol_ratio = (tol_native * PPB) / total_supply;
   // Expected ratios from DEFAULT_CONFIG: user=33.3%, tol=66.7%
-  const expected_user = 333_333n;
-  const expected_tol = 666_667n;
-  // Validate within 1% tolerance (10,000 PPM)
-  const tolerance = PPM / 100n;
+  const expected_user = 333_333_333n;
+  const expected_tol = 666_666_667n;
+  // Validate within 1% tolerance (10,000,000 PPB)
+  const tolerance = PPB / 100n;
   assertApprox(
     user_ratio,
     expected_user,
@@ -863,7 +863,7 @@ runTest("Distribution Accuracy - Multi-Mint Accumulation", () => {
   const total_ratio = user_ratio + tol_ratio;
   assertApprox(
     total_ratio,
-    PPM,
+    PPB,
     tolerance,
     "Total distribution must sum to 100%",
   );
@@ -1049,8 +1049,8 @@ runTest("TOL Buffer Behavior Before Pool Initialization", () => {
   const system = create_system({
     tmc: {
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -1102,8 +1102,8 @@ runTest("Distribution Remainder Handling", () => {
       price_initial: PRECISION,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -1146,8 +1146,8 @@ runTest("Infrastructure Premium Mathematical Proof", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -1180,8 +1180,8 @@ runTest("Floor Formula & Scenario Verification", () => {
       price_initial: PRECISION,
       slope: PRECISION,
       mint_shares: {
-        user_ppm: 333_333n,
-        tol_ppm: 666_667n,
+        user_ppb: 333_333_333n,
+        tol_ppb: 666_666_667n,
       },
     },
   });
@@ -1197,7 +1197,7 @@ runTest("Floor Formula & Scenario Verification", () => {
   // Theoretical Floor if User dumps ALL their tokens (S_user)
   // S_user is what users hold.
   const total_minted = minter.supply;
-  const user_supply = (total_minted * 333_333n) / PPM;
+  const user_supply = (total_minted * 333_333_333n) / PPB;
   const theoretical_denom = R_native + user_supply;
   const theoretical_floor =
     (k * PRECISION) / (theoretical_denom * theoretical_denom);
@@ -1221,11 +1221,11 @@ runTest("Floor Formula & Scenario Verification", () => {
   // a = S_tol / S_total = 0.667
   // s/a = 0.5
   // Expected = 1 / (1.5)^2 = 1 / 2.25 = 0.4444...
-  const expected_ratio_ppm = 444_444n; // 44.4%
-  const actual_ratio_ppm = (ratio * PPM) / PRECISION;
+  const expected_ratio_ppb = 444_444_444n; // 44.4%
+  const actual_ratio_ppb = (ratio * PPB) / PRECISION;
   assertApprox(
-    actual_ratio_ppm,
-    expected_ratio_ppm,
+    actual_ratio_ppb,
+    expected_ratio_ppb,
     5000n,
     "Floor/Ceiling ratio matches 1/(1+s/a)^2",
   );
@@ -1373,8 +1373,8 @@ runTest("Bootstrap Gravity Well Detection", () => {
     const tol_value = system.xyk.reserve_native * system.tmc.get_price();
     tol_market_share = (tol_value * PRECISION) / market_cap;
     // Critical threshold around 15% of market cap in TOL
-    if (tol_market_share > 150_000n) {
-      // 15% in PPM units
+    if (tol_market_share > 150_000_000n) {
+      // 15% in PPB units
       stability_achieved = true;
       break;
     }
@@ -1384,7 +1384,7 @@ runTest("Bootstrap Gravity Well Detection", () => {
     "System should achieve stability after critical TOL threshold",
   );
   assert(
-    tol_market_share > 100_000n,
+    tol_market_share > 100_000_000n,
     "TOL should accumulate significant market share",
   );
 });
@@ -1567,7 +1567,7 @@ runTest("Sandwich Attack Fee Burden", () => {
   const backrun_fee_foreign =
     (backrun_fee * system.xyk.get_price()) / PRECISION;
   const total_fees = frontrun_fee + backrun_fee_foreign;
-  const fee_ratio = (total_fees * PPM) / attack_amount;
+  const fee_ratio = (total_fees * PPB) / attack_amount;
   // Verify fees are substantial (0.5% per swap = 1% round-trip minimum)
   assert(
     fee_ratio >= 6_000n, // >= 0.6% total fees (accounts for conversion and slippage)
@@ -1678,7 +1678,7 @@ runTest("Cross-Chain Bridge Failure Resilience", () => {
     if (price > max_price) max_price = price;
     if (price < min_price) min_price = price;
   }
-  const price_divergence = ((max_price - min_price) * PPM) / max_price;
+  const price_divergence = ((max_price - min_price) * PPB) / max_price;
   // Verify realistic price divergence exists
   assert(
     price_divergence > 100n, // >0.01% price difference (realistic for isolated chains)
@@ -1709,7 +1709,7 @@ runTest("Cross-Chain Bridge Failure Resilience", () => {
     0n,
   );
   const tol_distribution = chains.map(
-    (sys) => (sys.xyk.reserve_native * PPM) / total_tol_native,
+    (sys) => (sys.xyk.reserve_native * PPB) / total_tol_native,
   );
   // No single chain should have >70% of total TOL
   const max_tol_share = tol_distribution.reduce(
@@ -1717,7 +1717,7 @@ runTest("Cross-Chain Bridge Failure Resilience", () => {
     0n,
   );
   assert(
-    max_tol_share <= 700_000n, // <= 70%
+    max_tol_share <= 700_000_000n, // <= 70%
     "TOL distribution should prevent single-chain dominance risk",
   );
   // Verify arbitrage is impossible without bridge functionality
@@ -1733,9 +1733,9 @@ runTest("Cross-Chain Bridge Failure Resilience", () => {
     const k = system.xyk.reserve_native * system.xyk.reserve_foreign;
     const supply = system.tmc.supply;
     // Each chain should have sustainable TOL-to-supply ratio
-    const tol_ratio = (system.xyk.reserve_native * PPM) / supply;
+    const tol_ratio = (system.xyk.reserve_native * PPB) / supply;
     assert(
-      tol_ratio > 50_000n, // >5% TOL ratio for each chain (more realistic)
+      tol_ratio > 50_000_000n, // >5% TOL ratio for each chain (more realistic)
       "Each chain should maintain sufficient TOL for floor guarantee",
     );
     assert(k > 0n, "Chain " + idx + " XYK invariant must be positive");
@@ -1748,8 +1748,8 @@ runTest("TOL Capital Efficiency vs Traditional Treasury", () => {
       price_initial: PRECISION / 1_000n,
       slope: PRECISION / 1_000n,
       mint_shares: {
-        user_ppm: 333_000n,
-        tol_ppm: 667_000n,
+        user_ppb: 333_000_000n,
+        tol_ppb: 667_000_000n,
       },
     },
   });
@@ -1773,15 +1773,15 @@ runTest("TOL Capital Efficiency vs Traditional Treasury", () => {
     const total_tol_reserves =
       system.xyk.reserve_native + system.xyk.reserve_foreign;
     if (total_tol_reserves === 0n) return 0n;
-    const active_ratio = (total_active_reserves * PPM) / total_tol_reserves;
+    const active_ratio = (total_active_reserves * PPB) / total_tol_reserves;
     return active_ratio;
   };
   // Test 1: Active Capital Deployment
   const active_capital_ratio = calculate_active_capital_ratio(system);
   assertApprox(
     active_capital_ratio,
-    1_000_000n,
-    10_000n,
+    1_000_000_000n,
+    10_000_000n,
     "TMCTOL achieves ~100% capital utilization through continuous deployment cycles (temporary buffers recycled into subsequent mints) vs 0% traditional idle treasury",
   );
   // Test 2: Price Floor Protection
@@ -1824,10 +1824,10 @@ runTest("TOL Capital Efficiency vs Traditional Treasury", () => {
   const total_active_reserves_before =
     bucket_a_share_native + bucket_a_share_foreign + remaining_active_reserves;
   const post_spending_ratio =
-    (remaining_active_reserves * PPM) / total_active_reserves_before;
+    (remaining_active_reserves * PPB) / total_active_reserves_before;
   assertApprox(
     post_spending_ratio,
-    500_000n,
+    500_000_000n,
     20_000n,
     "System maintains 50%+ active capital after strategic spending, demonstrating resilience vs traditional treasury where any spending reduces protection to 0%",
   );
@@ -1923,7 +1923,7 @@ runTest("Economic Incentive Alignment", () => {
   const tmc_tokens = tmc_result.user_native;
   const xyk_sell_result = system.xyk.swap_native_to_foreign(tmc_tokens, 0n);
   const arbitrage_revenue = xyk_sell_result.foreign_out;
-  const router_fee = (arbitrage_amount * 5_000n) / PPM;
+  const router_fee = (arbitrage_amount * 5_000n) / PPB;
   const effective_cost = arbitrage_amount + router_fee;
   assert(
     arbitrage_revenue <= effective_cost,

@@ -1,6 +1,6 @@
 export type MintShareConfig = {
-  user_ppm: bigint;
-  tol_ppm: bigint;
+  user_ppb: bigint;
+  tol_ppb: bigint;
 };
 
 export type TmcConfig = {
@@ -10,11 +10,11 @@ export type TmcConfig = {
 };
 
 export type XykConfig = {
-  fee_xyk_ppm: bigint;
+  fee_xyk_ppb: bigint;
 };
 
 export type RouterConfig = {
-  fee_router_ppm: bigint;
+  fee_router_ppb: bigint;
   min_swap_foreign: bigint;
   min_initial_foreign: bigint;
 };
@@ -61,7 +61,7 @@ export type SwapResult = {
   native_router_fee?: bigint;
   price_before: bigint;
   price_after: bigint;
-  price_impact_ppm?: bigint;
+  price_impact_ppb?: bigint;
   tol?: TolResult;
 };
 

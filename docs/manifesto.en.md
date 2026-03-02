@@ -6,7 +6,7 @@
 
 ## The Trust Problem
 
-After fifteen years of crypto, the core question is still open: **how do we build a resilient economy for long-term growth?**
+After more than a decade of crypto, the core question is still open: **how do we build a resilient economy for long-term growth?**
 
 We have seen DAOs vote themselves into collapse. Treasuries drained by a sequence of decisions. Liquidity disappearing with incentives. Price held up by belief—then broken when belief fades.
 
@@ -18,9 +18,9 @@ The problem is not people. The problem is architecture where system survival dep
 
 We separate DAO architecture into three layers with distinct areas of responsibility:
 
-**L0:** `Physics` — invariants and risk boundaries.
-**L1:** `Strategy` — growth directions and capital distribution.
-**L2:** `Tactics` — execution through teams, agents, and DAO loops.
+- **L0:** `Physics` — invariants and risk boundaries.
+- **L1:** `Strategy` — growth directions and capital distribution.
+- **L2:** `Tactics` — execution through teams, agents, and DAO loops.
 
 **Physics protects Strategy from strategic error. Strategy sets direction and funds Tactics from the primary protocol liquidity source defined by Physics. Tactics execute.**
 
@@ -84,7 +84,7 @@ Join the coordination. Verify the code. Verify the math in the [TMCTOL specifica
 
 ---
 
-- `Version`: 1.1.0
-- `Date`: February 2026
+- `Version`: 1.2.0
+- `Date`: March 2026
 - `Author`: LLB Lab
 - `License`: MIT

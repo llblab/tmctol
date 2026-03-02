@@ -3,8 +3,8 @@
 /**
  * @name `TMCTOL` Simulator
  * @note This simulator serves for preliminary economic testing, parameter optimization, and business logic formalization of composite tokenomics models.
- * @units Balances, prices and slope use `PRECISION` (10^12) for accuracy. Fractional values (fees, shares) use `PPM` (Parts Per Million, 10^6) and require a '_ppm' suffix.
- * @version 1.1.0
+ * @units Balances, prices and slope use `PRECISION` (10^12) for accuracy. Fractional values (fees, shares) use `PPB` (Parts Per Billion, 10^9) and require a '_ppb' suffix.
+ * @version 1.2.0
  * @module model.js
  */
 
@@ -41,31 +41,31 @@ function isOk(result) {
 
 export const DECIMALS = 12n;
 export const PRECISION = 10n ** DECIMALS;
-export const PPM = 1_000_000n;
+export const PPB = 1_000_000_000n;
 
 export const DEFAULT_CONFIG = /** @type {SystemConfig} */ ({
   router: {
     min_initial_foreign: 100n * PRECISION,
     min_swap_foreign: PRECISION / 100n,
-    fee_router_ppm: (5n * PPM) / 1_000n,
+    fee_router_ppb: (5n * PPB) / 1_000n,
   },
   xyk: {
-    fee_xyk_ppm: 0n,
+    fee_xyk_ppb: 0n,
   },
   tmc: {
     price_initial: PRECISION / 1_000n,
     slope: PRECISION / 1_000_000n,
     mint_shares: {
-      user_ppm: 333_333n,
-      tol_ppm: 666_667n,
+      user_ppb: 333_333_333n,
+      tol_ppb: 666_666_667n,
     },
   },
   tol: {
     bucket_shares: {
-      a_ppm: 500_000n,
-      b_ppm: 166_667n,
-      c_ppm: 166_667n,
-      d_ppm: 166_666n,
+      a_ppb: 500_000_000n,
+      b_ppb: 166_666_667n,
+      c_ppb: 166_666_667n,
+      d_ppb: 166_666_666n,
     },
   },
 });
@@ -218,14 +218,14 @@ export class Tol {
     this.xyk = xyk;
     this.bucket_config = config.bucket_shares;
     this.bucket_keys = Object.keys(config.bucket_shares).map((key) =>
-      key.replace(/_ppm$/, ""),
+      key.replace(/_ppb$/, ""),
     );
     const sum_buckets = Object.values(config.bucket_shares).reduce(
       (sum, val) => sum + val,
       0n,
     );
-    if (sum_buckets !== PPM) {
-      throw new Error(`Bucket shares must sum to ${PPM}, got ${sum_buckets}`);
+    if (sum_buckets !== PPB) {
+      throw new Error(`Bucket shares must sum to ${PPB}, got ${sum_buckets}`);
     }
     /** @type {Map<string, LiquidityBucket>} */
     this.buckets = new Map();
@@ -425,11 +425,11 @@ export class Tol {
     const fractions = {};
     let sum_shares = 0n;
     this.bucket_keys.forEach((key) => {
-      const ppm_key = `${key}_ppm`;
-      const share = BigMath.mul_div(total, this.bucket_config[ppm_key], PPM);
+      const ppb_key = `${key}_ppb`;
+      const share = BigMath.mul_div(total, this.bucket_config[ppb_key], PPB);
       shares[key] = share;
       sum_shares += share;
-      fractions[key] = (total * this.bucket_config[ppm_key]) % PPM;
+      fractions[key] = (total * this.bucket_config[ppb_key]) % PPB;
     });
     const remainder = total - sum_shares;
     if (remainder > 0n && this.bucket_keys.length > 0) {
@@ -463,10 +463,10 @@ export class Tol {
 
 export class Xyk {
   constructor(/** @type {XykConfig} */ config) {
-    if (config.fee_xyk_ppm >= PPM) {
+    if (config.fee_xyk_ppb >= PPB) {
       throw new Error("Fee must be < 100%");
     }
-    this.fee_ppm = config.fee_xyk_ppm;
+    this.fee_ppb = config.fee_xyk_ppb;
     this.reserve_native = 0n;
     this.reserve_foreign = 0n;
     this.supply_lp = 0n;
@@ -612,9 +612,9 @@ export class Xyk {
       price_after > price_before
         ? price_after - price_before
         : price_before - price_after;
-    const price_impact_ppm =
+    const price_impact_ppb =
       price_before > 0n
-        ? BigMath.mul_div(price_change_abs, PPM, price_before)
+        ? BigMath.mul_div(price_change_abs, PPB, price_before)
         : 0n;
     const result = is_native_to_foreign
       ? {
@@ -634,7 +634,7 @@ export class Xyk {
       fee: fee_charged,
       price_before,
       price_after,
-      price_impact_ppm,
+      price_impact_ppb,
     };
   }
 
@@ -650,8 +650,8 @@ export class Xyk {
       : this.reserve_native;
     const amount_in_with_fee = BigMath.mul_div(
       amount_in,
-      PPM - this.fee_ppm,
-      PPM,
+      PPB - this.fee_ppb,
+      PPB,
     );
     const fee_charged = amount_in - amount_in_with_fee;
     const numerator = amount_in_with_fee * reserve_out;
@@ -672,8 +672,8 @@ export class Xyk {
   ) {
     const amount_in_with_fee = BigMath.mul_div(
       amount_in,
-      PPM - this.fee_ppm,
-      PPM,
+      PPB - this.fee_ppb,
+      PPB,
     );
     const numerator = amount_in_with_fee * reserve_out;
     const denominator = reserve_in + amount_in_with_fee;
@@ -691,13 +691,13 @@ export class Tmc {
     }
     this.price_initial = config.price_initial;
     this.slope = config.slope;
-    this.user_ppm = config.mint_shares.user_ppm;
-    this.tol_ppm = config.mint_shares.tol_ppm;
+    this.user_ppb = config.mint_shares.user_ppb;
+    this.tol_ppb = config.mint_shares.tol_ppb;
     this.tol = tol;
     this.supply = 0n;
-    const sum_shares = this.user_ppm + this.tol_ppm;
-    if (sum_shares !== PPM) {
-      throw new Error(`Shares must sum to ${PPM}, got ${sum_shares}`);
+    const sum_shares = this.user_ppb + this.tol_ppb;
+    if (sum_shares !== PPB) {
+      throw new Error(`Shares must sum to ${PPB}, got ${sum_shares}`);
     }
   }
 
@@ -785,12 +785,12 @@ export class Tmc {
   }
 
   #distribute(/** @type {bigint} */ total_native) {
-    const user = BigMath.mul_div(total_native, this.user_ppm, PPM);
-    const tol = BigMath.mul_div(total_native, this.tol_ppm, PPM);
+    const user = BigMath.mul_div(total_native, this.user_ppb, PPB);
+    const tol = BigMath.mul_div(total_native, this.tol_ppb, PPB);
     const remainder = total_native - user - tol;
     if (remainder > 0n) {
-      const user_frac = (total_native * this.user_ppm) % PPM;
-      const tol_frac = (total_native * this.tol_ppm) % PPM;
+      const user_frac = (total_native * this.user_ppb) % PPB;
+      const tol_frac = (total_native * this.tol_ppb) % PPB;
       if (user_frac >= tol_frac) {
         return { user: user + remainder, tol };
       } else {
@@ -861,8 +861,8 @@ export class FeeManager {
         );
         const min_native_out = BigMath.mul_div(
           expected_native,
-          (90n * PPM) / 100n,
-          PPM,
+          (90n * PPB) / 100n,
+          PPB,
         );
         const swap_result = this.xyk.swap_foreign_to_native(
           amount_foreign_fee,
@@ -975,7 +975,7 @@ export class SwapExecutor {
       foreign_router_fee: foreign_fee,
       price_before: swap_result.price_before,
       price_after: swap_result.price_after,
-      price_impact_ppm: swap_result.price_impact_ppm,
+      price_impact_ppb: swap_result.price_impact_ppb,
     };
   }
 
@@ -996,7 +996,7 @@ export class SwapExecutor {
       native_net: native_in - native_fee,
       price_before: swap_result.price_before,
       price_after: swap_result.price_after,
-      price_impact_ppm: swap_result.price_impact_ppm,
+      price_impact_ppb: swap_result.price_impact_ppb,
     };
   }
 }
@@ -1013,7 +1013,7 @@ export class Router {
     this.fee_manager = fee_manager;
     this.route_selector = new RouteSelector(xyk, tmc);
     this.swap_executor = new SwapExecutor(xyk, tmc, fee_manager);
-    this.fee_router_ppm = config.fee_router_ppm;
+    this.fee_router_ppb = config.fee_router_ppb;
     this.min_swap_foreign = config.min_swap_foreign;
     this.min_initial_foreign = config.min_initial_foreign;
   }
@@ -1032,7 +1032,7 @@ export class Router {
         `Initial mint requires minimum ${this.min_initial_foreign} foreign tokens`,
       );
     }
-    const foreign_fee = BigMath.mul_div(foreign_in, this.fee_router_ppm, PPM);
+    const foreign_fee = BigMath.mul_div(foreign_in, this.fee_router_ppb, PPB);
     const foreign_net = foreign_in - foreign_fee;
     if (foreign_net <= 0n) {
       throw new Error("Amount too small");
@@ -1070,7 +1070,7 @@ export class Router {
         "Pool not initialized. Cannot sell native tokens before initial liquidity",
       );
     }
-    const native_fee = BigMath.mul_div(native_in, this.fee_router_ppm, PPM);
+    const native_fee = BigMath.mul_div(native_in, this.fee_router_ppb, PPB);
     const native_net = native_in - native_fee;
     const price_spot = this.xyk.get_price();
     if (price_spot === 0n) {

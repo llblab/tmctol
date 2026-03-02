@@ -40,7 +40,7 @@ Expected output ends with:
 `model.js` exports:
 
 - `PRECISION = 10^12`
-- `PPM = 10^6`
+- `PPB = 10^9`
 - `create_system(config_override?)`
 - classes: `Tmc`, `Tol`, `Xyk`, `Router`, `FeeManager`, `User`, `BigMath`
 
@@ -53,7 +53,7 @@ const system = create_system({
   tmc: {
     price_initial: PRECISION / 1_000n,
     slope: PRECISION / 1_000_000n,
-    mint_shares: { user_ppm: 333_333n, tol_ppm: 666_667n },
+    mint_shares: { user_ppb: 333_333_333n, tol_ppb: 666_666_667n },
   },
 });
 
@@ -66,7 +66,7 @@ console.log(buy.route, buy.native_out?.toString());
 ## Unit and scaling conventions
 
 - Token balances and prices use fixed-point `PRECISION` (`10^12`)
-- Fractions/ratios use `PPM` (`10^6`) and `_ppm` naming
+- Fractions/ratios use `PPB` (`10^9`) and `_ppb` naming
 - Arithmetic is done in `BigInt` only
 
 This mirrors the project rule: spec model prioritizes mathematical clarity and precision before runtime constraints.

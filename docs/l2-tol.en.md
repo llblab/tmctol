@@ -809,7 +809,7 @@ A conforming implementation should track at minimum:
 
 - `MEV Resistance`: Micro-streaming can reduce extractability, but does not remove all MEV vectors
 - `Attack-Cost Models`: Economic deterrence depends on liquidity, participation, and adversary capital
-- `Floor Realization`: Modeled floor behavior may diverge from observed market prices under stressed liquidity conditions
+- `Stress-Floor Realization`: Modeled stress-floor behavior (`P_stress` envelope) may diverge from observed spot market prices (`P_xyk`) under stressed liquidity conditions
 - `Governance Quality`: Long-term resilience depends on participation quality, parameter stewardship, and operational security
 
 ## Conclusion
@@ -828,7 +828,7 @@ The system creates sustainable token economies where L2TOLT tokens carry governa
 
 ---
 
-- `Version`: 1.1.0
-- `Date`: February 2026
+- `Version`: 1.2.0
+- `Date`: March 2026
 - `Author`: LLB Lab
 - `License`: MIT

@@ -97,13 +97,13 @@ Precision model verification and scaling rule consistency.
 
 - Nature: Structural test for scaling convention adherence
 - Necessity: Enforces self-documenting code pattern
-- Validates: Fractional values (fees, shares) use `_ppm` suffix; slope uses PRECISION scaling without suffix
+- Validates: Fractional values (fees, shares) use `_ppb` suffix; slope uses PRECISION scaling without suffix
 
 ### 3.2 Scaling Rules - Input Pre-scaling
 
 - Nature: Confirms inputs arrive scaled to correct units
 - Necessity: Prevents double-scaling bugs
-- Validates: Price and slope use PRECISION; amounts use PRECISION; percentages (fees, shares) use PPM
+- Validates: Price and slope use PRECISION; amounts use PRECISION; percentages (fees, shares) use PPB
 
 ### 3.3 Scaling Rules - Price Scaling Consistency
 
@@ -111,9 +111,9 @@ Precision model verification and scaling rule consistency.
 - Necessity: Ensures all price-related calculations maintain [Foreign/Native] × PRECISION scaling
 - Validates: Price formula P(s) = P₀ + slope·s/PRECISION produces consistent units
 
-### 3.4 Scaling Rules - PPM Values Range
+### 3.4 Scaling Rules - PPB Values Range
 
-- Nature: Validates PPM values sum to 1,000,000 (100%)
+- Nature: Validates PPB values sum to 1,000,000,000 (100%)
 - Necessity: Prevents distribution math errors
 - Validates: Share allocation totals exactly 100%
 
@@ -127,7 +127,7 @@ Precision model verification and scaling rule consistency.
 
 - Nature: Property-based validation of price/slope scaling
 - Necessity: Ensures exact adherence to dimensional scaling across randomized inputs
-- Validates: `P(S) = P₀ + m·S/PRECISION` holds exactly; price remains non-negative; inputs conform to PRECISION/PPM domains
+- Validates: `P(S) = P₀ + m·S/PRECISION` holds exactly; price remains non-negative; inputs conform to PRECISION/PPB domains
 - Failure Criteria: Any deviation from the formula; negative price; unit-inconsistent results
 
 ---
@@ -170,7 +170,7 @@ Isolated validation of individual system components in architectural order.
 
 - Nature: Tests fee calculation and tracking for native-to-foreign swaps
 - Necessity: Validates that foreign_xyk_fee is correctly computed and returned
-- Validates: Fee field returned in swap result, fee is non-negative, fee equals zero when fee_ppm is 0
+- Validates: Fee field returned in swap result, fee is non-negative, fee equals zero when fee_ppb is 0
 - Key Insight: Separate fee fields (foreign_xyk_fee vs native_xyk_fee) preserve currency information for monitoring and analytics
 
 ### 4.7 Smart Router Path Selection
@@ -290,7 +290,7 @@ Complex economic behaviors and advanced component interactions.
 ### 7.6 Distribution Remainder Handling
 
 - Nature: Tests rounding remainder allocation to TOL
-- Necessity: Prevents dust loss from fractional PPM in 2-way split (user 33.3% + TOL 66.7%)
+- Necessity: Prevents dust loss from fractional PPB in 2-way split (user 33.3% + TOL 66.7%)
 - Validates: Total distributed matches minted exactly
 
 ---

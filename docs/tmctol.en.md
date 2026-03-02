@@ -7,7 +7,7 @@ TMCTOL (Token Minting Curve + Treasury-Owned Liquidity) is a tokenomic framework
 `Key Properties`:
 
 - Linear price ceiling via minting curve: `P_ceiling = P₀ + m·S/PRECISION`
-- Hyperbolic price floor via XYK mechanics: `P_floor = k/(R_native + S_sold)²`, where `k = R_native × R_foreign`
+- XYK price model with two references: spot pool price `P_xyk = R_foreign/R_native` and stress-floor envelope `P_stress(x) = k/(R_native + x)²`, where `k = R_native × R_foreign`
 - Supply compression through fee burning (0.5% router fee)
 - Multi-bucket TOL architecture enabling governance flexibility
 
@@ -242,29 +242,42 @@ Properties:
 - Governance-invariant (only changes via parameter modification)
 ```
 
-`Floor Calculation`:
+`Floor Model (two distinct references)`:
 
 ```
 k = R_native × R_foreign (constant product invariant)
-R_native' = R_native + S_sold
-P_floor = k / (R_native')²
 
-Derived approximation:
-P_floor / P_ceiling ≈ 1 / (1 + s/a)²
-where s = S_sold/S_total and a = floor support fraction (e.g. a ≈ 1/3 for Bucket_A)
+Spot pool price:
+P_xyk = R_foreign / R_native
+
+Stress-floor envelope for selloff size x:
+P_stress(x) = k / (R_native + x)²
+```
+
+`Reference-state assumption for ratio estimates`:
+
+To express stress floor as a fraction of ceiling using only `s` and `a`, we normalize at a parity reference state:
+
+```
+P_ceiling_ref = P_xyk_ref = R_foreign / R_native
+a = R_native / S_total
+s = S_sold / S_total
+
+Then:
+P_stress / P_ceiling_ref = 1 / (1 + s/a)²
 ```
 
 `Scenario Analysis` (assuming `a = 33.3%` Base Support):
 
-| Scenario    | Sellable Source                | Sold Fraction (`s`) | Floor/Ceiling Ratio | Volatility |
-| :---------- | :----------------------------- | :------------------ | :------------------ | :--------- |
-| User Exit   | Public Allocation (33%) sold   | 0.333               | 25%                 | 4×         |
-| System Exit | Public + Treasury (B/C/D) sold | 0.667               | 11%                 | 9×         |
+| Scenario    | Sellable Source                | Sold Fraction (`s`) | Stress/Ceiling Ratio | Volatility |
+| :---------- | :----------------------------- | :------------------ | :------------------- | :--------- |
+| User Exit   | Public Allocation (33%) sold   | 0.333               | 25%                  | 4×         |
+| System Exit | Public + Treasury (B/C/D) sold | 0.667               | 11%                  | 9×         |
 
 `Key Dependency`:
 
-- `User Exit`: Represents total selling of initial public supply. With Bucket_A supporting (`a=33%`), the floor holds at 25%.
-- `System Exit`: Represents a catastrophic scenario where Treasury buckets (B, C, D) enter circulation and are also sold. Under maintained protocol assumptions, Bucket_A implies an approximately 11% modeled floor ratio in this stress case.
+- `User Exit`: Represents total selling of initial public supply. With Bucket_A support (`a=33%`), stress floor remains at 25% of reference ceiling.
+- `System Exit`: Represents a catastrophic scenario where Treasury buckets (B, C, D) enter circulation and are also sold. Under maintained protocol assumptions, Bucket_A implies an approximately 11% modeled stress-floor ratio in this case.
 
 ### 3.3 Ratchet Effect Analysis
 
@@ -278,28 +291,31 @@ where s = S_sold/S_total and a = floor support fraction (e.g. a ≈ 1/3 for Buck
 
 `System Interaction`:
 
-When burning reduces circulating supply (`S_circ`) by `ΔS`:
+When burning reduces circulating supply (`S_circ`) by `ΔS`, the stress-envelope improves because maximum sellable inventory contracts.
+
+Define sellable pressure as `x_max = λ · S_circ`, where `λ ∈ (0, 1]` is governance/market dependent.
 
 1.  `Supply Contraction`: `S'_circ = S_circ - ΔS`
-2.  `Floor Elevation`: The maximum potential pool balance decreases, raising the floor.
+2.  `Stress-Floor Elevation`: reduced `x_max` raises the stress envelope.
     ```
-    P'_floor = k / (R_native + S'_circ)² > k / (R_native + S_circ)²
+    P'_stress,max = k / (R_native + λ·S'_circ)² > k / (R_native + λ·S_circ)²
     ```
-3.  `Ceiling Depression`: The minting price lowers as supply retracts.
+3.  `Ceiling Depression`: minting price lowers as supply retracts.
     ```
     P'_ceiling = P(S'_circ) < P(S_circ)
     ```
-4.  `Result`: The price corridor compresses from both sides (Bidirectional Compression).
+4.  `Spot Price Note`: if reserves are unchanged, `P_xyk = R_foreign/R_native` is unchanged
+5.  `Result`: the stress corridor compresses from both sides (Bidirectional Compression).
 
-`Floor Elevation Velocity`:
+`Stress-Floor Elevation Velocity (holding k, R_native, λ fixed over dt)`:
 
 ```
-dP_floor/dt ∝ (burn_rate × R_foreign) / (R_native)⁴
+dP_stress,max/dt ∝ (burn_rate × λ × k) / (R_native + λ·S_circ)³
 
 Properties:
-- Acceleration increases as R_native decreases
-- Velocity proportional to burn rate (governance controls via fees)
-- Quadratic denominator creates superlinear growth
+- Velocity is proportional to burn rate (governance controls via fees)
+- Velocity increases as sellable inventory shrinks
+- Relationship is nonlinear due to cubic denominator
 ```
 
 `Phase Evolution`:
@@ -340,21 +356,23 @@ P_TMC(S) = P₀ + m·S/PRECISION
 
 When supply decreases by ΔS:
 ΔP_ceiling = -m·ΔS/PRECISION (ceiling compression)
-P_floor = const(R_native, R_foreign)
-          (floor unchanged if reserves stay constant)
+P_xyk = const(R_native, R_foreign)
+        (spot pool price unchanged if reserves stay constant)
+P_stress,max = k / (R_native + λ·S_circ)²
+              (stress floor rises as sellable inventory contracts)
 
-Net effect: spread compression with floor-ceiling convergence
+Net effect: stress corridor compression with floor-ceiling convergence
 ```
 
 `Progression Example` (R_foreign = 666,667 Foreign, m = 1,500,000):
 
-| Supply | P_ceiling | P_floor (min) | Spread |
-| ------ | --------- | ------------- | ------ |
-| 1M     | 1.501     | 0.11          | 13.6×  |
-| 500k   | 0.751     | 0.22          | 3.4×   |
-| 200k   | 0.301     | 0.56          | 0.54×  |
+| Supply | P_ceiling | P_stress (min) | Spread |
+| ------ | --------- | -------------- | ------ |
+| 1M     | 1.501     | 0.11           | 13.6×  |
+| 500k   | 0.751     | 0.22           | 3.4×   |
+| 200k   | 0.301     | 0.56           | 0.54×  |
 
-`Critical Point`: When P_floor > P_ceiling, arbitrage incentives reverse. Minting becomes more attractive than market selling, creating natural equilibrium.
+`Critical Point`: When `P_stress > P_ceiling`, arbitrage incentives reverse. Minting becomes more attractive than market selling, creating natural equilibrium.
 
 ### 3.5 Equilibrium Analysis
 
@@ -506,7 +524,7 @@ Narrower range → Reduced volatility → Increased confidence → Adoption
 - `Equilibrium band`: Balanced forces; stable trading reflects fair value
 - `Ceiling proximity`: Minting incentivized; emission accelerates
 
-`Volatility Dynamics`: Spread compression (P_ceiling - P_floor) decreases monotonically over time given sustained burning. This represents mathematical consequence of supply compression with fixed reserve ratios, not an economic promise but a deterministic outcome contingent on governance maintaining conditions.
+`Volatility Dynamics`: Stress spread compression (`P_ceiling - P_stress,max`) decreases monotonically over time given sustained burning. This represents mathematical consequence of supply compression with fixed reserve ratios, not an economic promise but a deterministic outcome contingent on governance maintaining conditions.
 
 ### 5.3 Evolution Path
 
@@ -564,7 +582,7 @@ Narrower range → Reduced volatility → Increased confidence → Adoption
 `Precision Requirements`:
 
 - PRECISION = 10¹² for Price and Slope types
-- PPM = 10⁶ for dimensionless ratios
+- PPB = 10⁹ for dimensionless ratios
 - All arithmetic checked for overflow
 - Dimensional correctness enforced by type system
 
@@ -720,11 +738,12 @@ TMCTOL establishes a framework with mathematically derived price relationships a
 `Mathematical Framework`:
 
 ```
-Ceiling:       P_ceiling = P₀ + m·S/PRECISION
-Floor:         P_floor = k / (R_native + S_sold)²
-Backing Eq:    P_backing ≈ √(R_foreign × m / PRECISION)
-Parity Eq:     P_parity = R_foreign / R_native
-Velocity:      dP_floor/dt ∝ (burn_rate × R_foreign)/(R_native)⁴
+Ceiling:         P_ceiling = P₀ + m·S/PRECISION
+Spot XYK:        P_xyk = R_foreign / R_native
+Stress Floor:    P_stress(x) = k / (R_native + x)²
+Backing Eq:      P_backing ≈ √(R_foreign × m / PRECISION)
+Parity Eq:       P_parity = R_foreign / R_native
+Stress Velocity: dP_stress,max/dt ∝ (burn_rate × λ × k)/(R_native + λ·S_circ)³
 ```
 
 `Critical Dependencies`:
@@ -748,7 +767,7 @@ System exhibits predicted dynamics (floor elevation, range compression) only whe
 
 ---
 
-- `Version`: 1.1.0
-- `Date`: February 2026
+- `Version`: 1.2.0
+- `Date`: March 2026
 - `Author`: LLB Lab
 - `License`: MIT

@@ -1,3 +1,10 @@
+> [!WARNING]
+> This repository is archived and kept as a historical snapshot.
+> `TMCTOL` has been adopted as the tokenomic standard within the `DEOS` framework and development has moved to the new organization repository:
+> https://github.com/atmo-network/deos
+>
+> For the current evolution of the framework, updated documentation, and future implementation work, use the `DEOS` repository.
+
 # `TMCTOL`: Token Minting Curve + Treasury-Owned Liquidity
 
 A tokenomics framework with mathematically guaranteed price boundaries through liquidity accumulation. Transforms unlimited downside risk into calculable bounded risk.
